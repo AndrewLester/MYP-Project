@@ -36,7 +36,7 @@ public class BluetoothMessengerService extends Service {
     }
 
     public static interface Reader {
-        void bluetoothRead(Optional<BluetoothPacket> packet);
+        void bluetoothRead(BluetoothPacket packet);
     }
 
     private final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -223,8 +223,6 @@ public class BluetoothMessengerService extends Service {
                     // Read from the InputStream.
 
                     if (inputStream.available() > 2) {
-                        // Send the obtained bytes to the UI activity.
-
                         byte type = (byte) inputStream.read();
                         byte length = (byte) inputStream.read();
                         byte[] data = new byte[length + 2];

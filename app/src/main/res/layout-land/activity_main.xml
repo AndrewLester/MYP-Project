@@ -25,28 +25,40 @@
                 android:layout_height="match_parent"
                 tools:context=".MainActivity">
 
+                <TextView
+                    android:id="@+id/moistureSensorData"
+                    android:layout_width="173dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="32dp"
+                    android:text="0"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <Button
                     android:id="@+id/off_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="56dp"
+                    android:layout_marginStart="70dp"
                     android:text="@string/off_button_text"
                     android:textAppearance="@android:style/TextAppearance.Material.Widget.Button"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/on_button"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.28" />
+                    app:layout_constraintVertical_bias="0.377" />
 
                 <Button
                     android:id="@+id/on_button"
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
-                    android:layout_marginStart="52dp"
+                    android:layout_marginStart="44dp"
                     android:text="@string/on_button_text"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.28" />
+                    app:layout_constraintVertical_bias="0.377" />
 
                 <Button
                     android:id="@+id/init_button"
@@ -57,9 +69,10 @@
                     android:text="@string/init_button_text"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/off_button"
+                    app:layout_constraintHorizontal_bias="0.471"
                     app:layout_constraintStart_toEndOf="@+id/on_button"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.152" />
+                    app:layout_constraintVertical_bias="0.2" />
 
                 <Button
                     android:id="@+id/cancel_button"
@@ -72,48 +85,38 @@
                     app:layout_constraintEnd_toStartOf="@+id/off_button"
                     app:layout_constraintStart_toEndOf="@+id/on_button"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.417" />
+                    app:layout_constraintVertical_bias="0.597" />
 
                 <ProgressBar
                     android:id="@+id/progressBar"
                     style="?android:attr/progressBarStyle"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="592dp"
+                    android:layout_marginTop="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:layout_marginBottom="310dp"
                     android:progressDrawable="?attr/colorAccent"
                     android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:visibility="gone" />
 
                 <TextView
                     android:id="@+id/numberInfo"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="168dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="32dp"
                     android:text="@string/number_info"
                     android:textColor="@color/colorAccent"
                     android:textSize="18sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.15"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.29000002"
                     tools:text="@string/number_info" />
-
-                <TextView
-                    android:id="@+id/moistureSensorData"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="168dp"
-                    android:text="0"
-                    android:textColor="@color/colorAccent"
-                    android:textSize="18sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.8"
-                    app:layout_constraintStart_toStartOf="parent"
-                    tools:text="0" />
 
             </android.support.constraint.ConstraintLayout>
         </android.support.v4.widget.NestedScrollView>

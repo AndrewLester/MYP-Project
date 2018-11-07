@@ -12,14 +12,13 @@ public abstract class BluetoothPacket {
         append(0x00, IncomingHumidityDataPacket::new);
     }};
 
-    public static Optional<BluetoothPacket> obtain(byte[] bytes) {
+    public static BluetoothPacket obtain(byte[] bytes) {
         byte type = bytes[0];
         ByteBuffer byteBuff = ByteBuffer.wrap(bytes);
 
-        Optional<BluetoothPacket> packet;
-        packet = Optional.ofNullable(incomingPackets.get((int) type)).map(f -> f.apply(byteBuff));
+        Function<ByteBuffer, BluetoothPacket> packet = incomingPackets.get((int) type);
 
-        return packet;
+        return packet == null ? null : packet.apply(byteBuff);
     }
 
     private final byte type;

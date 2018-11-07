@@ -4,7 +4,7 @@
     <color name="colorPrimaryDark">#388E3C</color>
     <!-- Changed below value from #c8e6c9 to #81c784 -->
     <color name="colorPrimaryLight">#81c784</color>
-    <color name="colorAccent">#03A9F4</color>
+    <color name="colorAccent">#448AFF</color>
     <color name="colorPrimaryText">#212121</color>
     <color name="colorSecondaryText">#757575</color>
     <color name="colorHeadingText">#FFFFFF</color>
