@@ -26,13 +26,13 @@ public class BluetoothMessengerService extends Service {
 
     public static class MessageConstants {
         public static final String INTENT_ACTION = "mypproject.broadcast.intent";
-        public static final int TO_CONNECTION_FAILURE = 0;
-        public static final int FROM_MSG_REGISTER_CLIENT = 1;
-        public static final int FROM_MESSAGE_WRITE = 2;
-        public static final int TO_MESSAGE_READ = 3;
-        public static final int TO_MESSAGE_TOAST = 4;
-        public static final int TO_MESSAGE_WRITE = 5;
-
+        public static final int TO_CONNECTION_SUCCESS = 0;
+        public static final int TO_CONNECTION_FAILURE = 1;
+        public static final int FROM_MSG_REGISTER_CLIENT = 2;
+        public static final int FROM_MESSAGE_WRITE = 3;
+        public static final int TO_MESSAGE_READ = 4;
+        public static final int TO_MESSAGE_TYPE_TOAST = 5;
+        public static final int TO_MESSAGE_TYPE_WRITE = 6;
     }
 
     public static interface Reader {
@@ -166,6 +166,9 @@ public class BluetoothMessengerService extends Service {
         public synchronized void connected(BluetoothSocket socket, BluetoothDevice device,
                                            final String socketType) {
             Log.d(TAG, "connected, Socket Type:" + socketType);
+            Intent intent = new Intent(MessageConstants.INTENT_ACTION);
+            intent.putExtra("type", MessageConstants.TO_CONNECTION_SUCCESS);
+            LocalBroadcastManager.getInstance(BluetoothMessengerService.this.getApplicationContext()).sendBroadcast(intent);
 
             if (connectThread != null) {
                connectThread.cancel();
@@ -250,7 +253,7 @@ public class BluetoothMessengerService extends Service {
 
                 // Share the sent message with the UI activity.
                 Intent sentData = new Intent(MessageConstants.INTENT_ACTION);
-                sentData.putExtra("type", MessageConstants.TO_MESSAGE_WRITE);
+                sentData.putExtra("type", MessageConstants.TO_MESSAGE_TYPE_WRITE);
                 sentData.putExtra("data", bytes);
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(sentData);
             } catch (IOException e) {
@@ -258,7 +261,7 @@ public class BluetoothMessengerService extends Service {
 
                 // Send a failure message back to the activity.
                 Intent sentData = new Intent(MessageConstants.INTENT_ACTION);
-                sentData.putExtra("type", MessageConstants.TO_MESSAGE_TOAST);
+                sentData.putExtra("type", MessageConstants.TO_MESSAGE_TYPE_TOAST);
                 sentData.putExtra("data", "Couldn't send data to other device");
                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(sentData);
             }

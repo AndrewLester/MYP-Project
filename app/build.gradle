@@ -16,6 +16,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets {
+        main {
+            res.srcDirs =
+                    [
+                            'src/main/res/layouts/activity_bluetooth',
+                            'src/main/res/layouts/activity_main',
+                            'src/main/res/layouts/activity_main2',
+                            'src/main/res/layouts',
+                            'src/main/res'
+                    ]
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

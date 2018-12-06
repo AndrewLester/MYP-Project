@@ -1,4 +1,4 @@
-package lestera.me.mypproject;
+package lestera.me.mypproject.activities;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -29,6 +29,8 @@ import android.widget.Toast;
 
 import java.util.Optional;
 
+import lestera.me.mypproject.BluetoothMessengerService;
+import lestera.me.mypproject.R;
 import lestera.me.mypproject.packets.BluetoothPacket;
 import lestera.me.mypproject.packets.IncomingHumidityDataPacket;
 import lestera.me.mypproject.packets.OutgoingLEDPacket;
@@ -50,8 +52,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
+        public void onServiceConnected(ComponentName className, IBinder service) {
             MainActivity.this.service = ((BluetoothMessengerService.BluetoothBinder) service).getService();
             MainActivity.this.service.setReader(MainActivity.this);
             bound = true;
@@ -59,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
-            MainActivity.this.service = null;
             bound = false;
+            MainActivity.this.service = null;
         }
     };
 
@@ -69,12 +70,18 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
         public void onReceive(Context context, Intent intent) {
             switch (intent.getIntExtra("type", 0)) {
                 case BluetoothMessengerService.MessageConstants.TO_CONNECTION_FAILURE:
-                    findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
+                case BluetoothMessengerService.MessageConstants.TO_CONNECTION_SUCCESS:
+                    initProgress.clearAnimation();
+                    initProgress.setVisibility(View.INVISIBLE);
                     runOnUiThread(() -> {
-                        Toast.makeText(MainActivity.this, "Can't connect to device", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this,
+                                intent.getIntExtra("type", 0) == 0
+                                ? getString(R.string.toast_connection_success)
+                                : getString(R.string.toast_connection_failure),
+                                Toast.LENGTH_LONG).show();
                     });
                     break;
-                case BluetoothMessengerService.MessageConstants.TO_MESSAGE_TOAST:
+                case BluetoothMessengerService.MessageConstants.TO_MESSAGE_TYPE_TOAST:
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity.this, intent.getStringExtra("data"), Toast.LENGTH_LONG).show();
                     });
@@ -119,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
                 this, drawerLayout, actionBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+        toggle.setDrawerSlideAnimationEnabled(false);
 
         NavigationView navigationView = findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this::navigationMenuSelect);
@@ -160,16 +168,18 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_BLUETOOTH_ENABLE && resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_BLUETOOTH_ENABLE) {
+            if (resultCode != RESULT_OK) {
+                initProgress.clearAnimation();
+                initProgress.setVisibility(View.INVISIBLE);
+            }
+
             Optional<BluetoothDevice> bluetoothDevice = bluetoothAdapter.getBondedDevices().stream().filter((device) -> device.getName().equals("Watering-Can")).findFirst();
             if (!bluetoothDevice.isPresent())
                 Toast.makeText(this, "Device not paired", Toast.LENGTH_LONG).show();
 
             bluetoothDevice.ifPresent(d -> service.connect(d, false));
         }
-
-        initProgress.clearAnimation();
-        initProgress.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -201,6 +211,20 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
         }
     }
 
+    public boolean navigationMenuSelect(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.nav_item:
+                break;
+            case R.id.nav_bluetooth:
+                Intent intent = new Intent(this, BluetoothActivity.class);
+                startActivity(intent);
+                break;
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
     private void init(View view) {
         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH_ENABLE);
@@ -224,28 +248,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
         if (!bound || !service.isConnected()) return;
 
         service.disable();
-    }
-
-    public boolean navigationMenuSelect(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.nav_camera:
-                break;
-            case R.id.nav_gallery:
-                break;
-            case R.id.nav_slideshow:
-                break;
-            case R.id.nav_manage:
-                break;
-            case R.id.nav_share:
-                break;
-            case R.id.nav_send:
-                break;
-            default:
-                break;
-        }
-
-        drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     public synchronized void bluetoothRead(BluetoothPacket packet) {

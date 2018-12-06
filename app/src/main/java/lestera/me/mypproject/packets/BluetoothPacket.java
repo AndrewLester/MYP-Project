@@ -3,7 +3,6 @@ package lestera.me.mypproject.packets;
 import android.util.SparseArray;
 
 import java.nio.ByteBuffer;
-import java.util.Optional;
 import java.util.function.Function;
 
 public abstract class BluetoothPacket {
@@ -36,17 +35,16 @@ public abstract class BluetoothPacket {
     }
 
     public byte[] toByteArray() {
-        byte[] buffer = new byte[2];
-        buffer[0] = type;
-        buffer[1] = 1;
+        byte[] heading = new byte[2];
+        heading[0] = type;
+        heading[1] = getDataLength();
 
         byte[] data = getDataAsByteArray();
 
-        ByteBuffer buff = ByteBuffer.allocate(buffer.length + data.length);
-        buff.put(buffer);
+        ByteBuffer buff = ByteBuffer.allocate(heading.length + data.length);
+        buff.put(heading);
         buff.put(data);
-        buffer = buff.array();
 
-        return buffer;
+        return buff.array();
     }
 }
