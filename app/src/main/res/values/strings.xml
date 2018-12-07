@@ -7,9 +7,6 @@
     <string name="settings_menu_item">Settings</string>
     <string name="toast_connection_success">Connected to device</string>
     <string name="toast_connection_failure">Can\'t connect to device</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_main2">Main2Activity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -19,4 +16,9 @@
     <string name="action_settings">Settings</string>
     <string name="number_info">Moisture Sensor Data</string>
     <string name="title_activity_bluetooth">BluetoothActivity</string>
+    <string name="bluetooth_icon_name">Bluetooth Icon</string>
+    <string name="no_bluetooth_caption">You must have Bluetooth enabled to view this page.</string>
+    <string name="no_bluetooth_heading">Enable Bluetooth</string>
+    <string name="no_bluetooth_image_content">Bluetooth Disabled</string>
+    <string name="button_retry_text">RETRY</string>
 </resources>

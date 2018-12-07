@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,21 +35,26 @@ import java.util.List;
 import java.util.Optional;
 
 import lestera.me.mypproject.R;
+import lestera.me.mypproject.fragments.ItemFragment;
+import lestera.me.mypproject.fragments.NoConnectionFragment;
 
 public class BluetoothActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        NoConnectionFragment.OnFragmentInteractionListener,
+        ItemFragment.OnListFragmentInteractionListener {
 
     private static final int REQUEST_BLUETOOTH_ENABLE = 0;
 
-    private ArrayList<BluetoothDevice> devices = new ArrayList<>();
+    private FragmentManager fragmentManager;
 
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("");
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Bluetooth Devices");
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -59,15 +66,17 @@ public class BluetoothActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-            // TODO: Add 2 fragments. 1 for background with no connection, one for background with,
+        fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        if (savedInstanceState == null) { // Only add fragments if loading Activity for the first time.
+            if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                fragmentTransaction.add(R.id.bluetooth_constraint_layout, new ItemFragment());
+            } else {
+                fragmentTransaction.add(R.id.bluetooth_constraint_layout, new NoConnectionFragment());
+            }
+            fragmentTransaction.commit();
         }
-
-        ListView listView = findViewById(R.id.list_view);
-
-        devices.addAll(BluetoothAdapter.getDefaultAdapter().getBondedDevices());
-
-        listView.setAdapter(new DeviceListAdapter(this, R.layout.list_item, devices));
     }
 
     @Override
@@ -127,47 +136,36 @@ public class BluetoothActivity extends AppCompatActivity
         return true;
     }
 
-    private class DeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
-
-        private int layout;
-
-        private DeviceListAdapter(Context context, int resource, List<BluetoothDevice> objects) {
-            super(context, resource, objects);
-
-            layout = resource;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            DeviceViewHolder deviceViewHolder = null;
-
-            if (convertView == null) {
-                LayoutInflater inflater = LayoutInflater.from(getContext());
-                convertView = inflater.inflate(layout, parent, false);
-
-                DeviceViewHolder viewHolder = new DeviceViewHolder();
-                viewHolder.thumbnail = convertView.findViewById(R.id.list_item_thumbnail);
-                viewHolder.title = convertView.findViewById(R.id.list_item_text);
-                viewHolder.title.setText(getItem(position).getName());
-                viewHolder.button = convertView.findViewById(R.id.list_item_button);
-                viewHolder.button.setOnClickListener(v -> {
-                    Toast.makeText(getContext(), "Done: " + getItem(position).getAddress(), Toast.LENGTH_LONG).show();
-                });
-
-                convertView.setTag(viewHolder);
-            } else {
-                deviceViewHolder = (DeviceViewHolder) convertView.getTag();
-                deviceViewHolder.title.setText(getItem(position).getName());
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_BLUETOOTH_ENABLE) {
+            if (resultCode == RESULT_OK) {
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new ItemFragment());
+                fragmentTransaction.commit();
             }
-
-            return convertView;
         }
     }
 
-    public class DeviceViewHolder {
-        ImageView thumbnail;
-        TextView title;
-        Button button;
+    @Override
+    public void onFragmentInteraction(View view) {
+        switch (view.getId()) {
+            case R.id.bluetooth_disabled_icon:
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH_ENABLE);
+                break;
+            case R.id.button_retry:
+                if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new ItemFragment());
+                    fragmentTransaction.commit();
+                }
+                break;
+        }
     }
 
+    @Override
+    public void onListFragmentInteraction(BluetoothDevice device) {
+
+    }
 }

@@ -7,6 +7,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="actionOverflowButtonStyle">@style/actionOverflowButtonStyleCustom</item>
+        <item name="android:windowAnimationStyle">@style/WindowAnimationStyle</item>
     </style>
 
     <style name="actionOverflowButtonStyleCustom" parent="@style/Widget.AppCompat.ActionButton.Overflow">
@@ -14,11 +15,16 @@
     </style>
 
     <style name="ToolbarTitle" parent="@style/TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">40sp</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="WindowAnimationStyle">
+        <item name="android:windowEnterAnimation">@anim/no_slide</item>
+        <item name="android:windowExitAnimation">@anim/no_slide</item>
+    </style>
 
 </resources>

@@ -218,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
             case R.id.nav_bluetooth:
                 Intent intent = new Intent(this, BluetoothActivity.class);
                 startActivity(intent);
+
                 break;
         }
 
