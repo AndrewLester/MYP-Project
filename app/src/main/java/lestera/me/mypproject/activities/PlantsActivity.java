@@ -1,7 +1,6 @@
 package lestera.me.mypproject.activities;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,53 +8,61 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.os.IBinder;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import lestera.me.mypproject.BluetoothMessengerService;
+import lestera.me.mypproject.Plant;
 import lestera.me.mypproject.R;
-import lestera.me.mypproject.fragments.BluetoothItemListFragment;
+import lestera.me.mypproject.fragments.CardListFragment;
 import lestera.me.mypproject.fragments.ItemListFragment;
 import lestera.me.mypproject.fragments.NoConnectionFragment;
+import lestera.me.mypproject.fragments.PlantFragment;
 import lestera.me.mypproject.packets.BluetoothPacket;
+import lestera.me.mypproject.packets.IncomingPlantDataPacket;
+import lestera.me.mypproject.packets.IncomingPlantNumberPacket;
+import lestera.me.mypproject.packets.OutgoingLEDPacket;
+import lestera.me.mypproject.packets.OutgoingRequestNumberPacket;
 
-public class BluetoothActivity extends AppCompatActivity implements
-        ItemListFragment.OnListFragmentInteractionListener<BluetoothDevice>,
+public class PlantsActivity extends AppCompatActivity implements
+        ItemListFragment.OnListFragmentInteractionListener<Plant>,
         BluetoothMessengerService.Reader {
 
+    private static final String FRAGMENT_TAG = "card_list_fragment";
+
     private DrawerLayout drawerLayout;
-    private FragmentManager fragmentManager;
+    private Toolbar actionBar;
     private Intent drawerIntent;
     private NavigationView navigationView;
+    private FragmentManager fragmentManager;
     private BluetoothMessengerService service;
-    private boolean bound;
+    private CardListFragment cardListFragment;
+    private boolean bound = false;
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            BluetoothActivity.this.service = ((BluetoothMessengerService.BluetoothBinder) service).getService();
-            BluetoothActivity.this.service.setReader(BluetoothActivity.this);
+            PlantsActivity.this.service = ((BluetoothMessengerService.BluetoothBinder) service).getService();
+            PlantsActivity.this.service.setReader(PlantsActivity.this);
             bound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
             bound = false;
-            BluetoothActivity.this.service = null;
+            PlantsActivity.this.service = null;
         }
     };
 
@@ -65,7 +72,7 @@ public class BluetoothActivity extends AppCompatActivity implements
             switch (intent.getIntExtra("type", 0)) {
                 case BluetoothMessengerService.MessageConstants.TO_MESSAGE_TYPE_TOAST:
                     runOnUiThread(() -> {
-                        Toast.makeText(BluetoothActivity.this, intent.getStringExtra("data"), Toast.LENGTH_LONG).show();
+                        Toast.makeText(PlantsActivity.this, intent.getStringExtra("data"), Toast.LENGTH_LONG).show();
                     });
                     break;
             }
@@ -75,15 +82,16 @@ public class BluetoothActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bluetooth);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("");
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Bluetooth Devices");
+        setContentView(R.layout.activity_plants);
 
-        drawerLayout = findViewById(R.id.drawer_layout);
+        actionBar = findViewById(R.id.activity_plants_toolbar);
+        actionBar.setTitle("");
+        setSupportActionBar(actionBar);
+        getSupportActionBar().setTitle("Plants");
+
+        drawerLayout = findViewById(R.id.activity_plants_drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+                this, drawerLayout, actionBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 if (drawerIntent != null) {
@@ -96,18 +104,18 @@ public class BluetoothActivity extends AppCompatActivity implements
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.activity_plants_nav_view);
         navigationView.setNavigationItemSelectedListener(this::navigationMenuSelect);
-        navigationView.setCheckedItem(R.id.nav_bluetooth);
+        navigationView.setCheckedItem(R.id.nav_plants);
 
         fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         if (savedInstanceState == null) { // Only add fragments if loading Activity for the first time.
             if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                fragmentTransaction.add(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment());
+                fragmentTransaction.add(R.id.plants_constraint_layout, new CardListFragment(), FRAGMENT_TAG);
             } else {
-                fragmentTransaction.add(R.id.bluetooth_constraint_layout, new NoConnectionFragment());
+                fragmentTransaction.add(R.id.plants_constraint_layout, new NoConnectionFragment());
             }
             fragmentTransaction.commit();
         }
@@ -116,13 +124,21 @@ public class BluetoothActivity extends AppCompatActivity implements
         bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
     }
 
+    public boolean navigationMenuSelect(MenuItem item) {
+        drawerIntent = MainActivity.mainNavigationMenuSelect(this, item);
+        navigationView.setCheckedItem(item);
+        drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
     @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == NoConnectionFragment.REQUEST_BLUETOOTH_ENABLE) {
+            if (resultCode == RESULT_OK) {
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.plants_constraint_layout, new CardListFragment(), FRAGMENT_TAG);
+                fragmentTransaction.commit();
+            }
         }
     }
 
@@ -151,52 +167,27 @@ public class BluetoothActivity extends AppCompatActivity implements
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.bluetooth, menu);
-        return true;
+    public void onListFragmentInteraction(Plant item, int resourceId) {
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    }
+
+    public void requestPlantNumber() {
+        if (!bound || !service.isConnected()) return;
+
+        service.write(new OutgoingRequestNumberPacket());
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    public void bluetoothRead(BluetoothPacket packet) {
+        CardListFragment fragment = (CardListFragment) fragmentManager.findFragmentByTag(FRAGMENT_TAG);
+        if (packet instanceof IncomingPlantNumberPacket) {
+            IncomingPlantNumberPacket plantNumberPacket = (IncomingPlantNumberPacket) packet;
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
-        return super.onOptionsItemSelected(item);
-    }
-
-    public boolean navigationMenuSelect(MenuItem item) {
-        drawerIntent = MainActivity.mainNavigationMenuSelect(this, item);
-        navigationView.setCheckedItem(item);
-        drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == NoConnectionFragment.REQUEST_BLUETOOTH_ENABLE) {
-            if (resultCode == RESULT_OK) {
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment());
-                fragmentTransaction.commit();
-            }
+            fragment.updatePlantNumber(plantNumberPacket.getPlantNumber());
+        } else if (packet instanceof IncomingPlantDataPacket) {
+            IncomingPlantDataPacket plantDataPacket = (IncomingPlantDataPacket) packet;
+            fragment.plantLoaded();
         }
     }
-
-    @Override
-    public void onListFragmentInteraction(BluetoothDevice device, int resourceId) {
-        service.setSelectedDevice(device);
-        SharedPreferences preferences = getApplication().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        preferences.edit().putString(BluetoothMessengerService.PREFERENCES_DEVICE_KEY, device.getAddress()).apply();
-    }
-
-    @Override
-    public void bluetoothRead(BluetoothPacket packet) { }
 }

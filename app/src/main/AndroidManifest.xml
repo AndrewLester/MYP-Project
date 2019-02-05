@@ -34,7 +34,11 @@
         <activity
             android:name=".activities.BluetoothActivity"
             android:label="@string/title_activity_bluetooth"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".activities.PlantsActivity"
+            android:label="PlantsActivity"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

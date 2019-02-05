@@ -1,12 +1,17 @@
 package lestera.me.mypproject.fragments;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,13 +27,11 @@ import lestera.me.mypproject.R;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link NoConnectionFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
  * Use the {@link NoConnectionFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class NoConnectionFragment extends Fragment {
-    private OnFragmentInteractionListener mListener;
+    public static final int REQUEST_BLUETOOTH_ENABLE = 0;
 
     private Button retryButton;
     private ImageView bluetoothIcon;
@@ -71,18 +74,12 @@ public class NoConnectionFragment extends Fragment {
         progressBar = view.findViewById(R.id.connection_retry_progress);
 
         bluetoothIcon = view.findViewById(R.id.bluetooth_disabled_icon);
-        bluetoothIcon.setOnClickListener(mListener::onFragmentInteraction);
+        bluetoothIcon.setOnClickListener(this::interaction);
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
@@ -92,7 +89,6 @@ public class NoConnectionFragment extends Fragment {
             timer.cancel();
         }
 
-        mListener = null;
         progressBar.clearAnimation();
         progressBar.setVisibility(View.GONE);
         retryButton.setVisibility(View.VISIBLE);
@@ -115,21 +111,22 @@ public class NoConnectionFragment extends Fragment {
             }
         }, 1500);
 
-        mListener.onFragmentInteraction(view);
+        interaction(view);
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(View View);
+    private void interaction(View view) {
+        switch (view.getId()) {
+            case R.id.bluetooth_disabled_icon:
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                getActivity().startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH_ENABLE);
+                break;
+            case R.id.button_retry:
+                if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                    FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment());
+                    fragmentTransaction.commit();
+                }
+                break;
+        }
     }
 }

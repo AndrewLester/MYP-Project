@@ -8,12 +8,6 @@ public class OutgoingLEDPacket extends BluetoothPacket {
     private byte[] buffer;
     private boolean ledState;
 
-    protected OutgoingLEDPacket(ByteBuffer buffer) {
-        super((byte) 0x01);
-        this.buffer = buffer.array();
-        setLEDState(this.buffer[2] == 0x01);
-    }
-
     public OutgoingLEDPacket(boolean on) {
         super((byte) 0x01);
         this.buffer = new byte[2 + getDataLength()];

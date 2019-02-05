@@ -1,5 +1,6 @@
 package lestera.me.mypproject.activities;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -39,16 +41,32 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
 
     private static final int REQUEST_BLUETOOTH_ENABLE = 1;
 
-    Button initButton, onButton, offButton, disableButton;
-    Toolbar actionBar;
-    ProgressBar initProgress;
+    public static Intent mainNavigationMenuSelect(Activity from, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.nav_main:
+                return new Intent(from, MainActivity.class);
+            case R.id.nav_bluetooth:
+                return new Intent(from, BluetoothActivity.class);
+            case R.id.nav_plants:
+                return new Intent(from, PlantsActivity.class);
+            default:
+                return null;
+        }
+    }
 
-    BluetoothMessengerService service;
+    private Button initButton, onButton, offButton, disableButton;
+    private Toolbar actionBar;
+    private ProgressBar initProgress;
 
-    DrawerLayout drawerLayout;
+    private BluetoothMessengerService service;
+
+    private DrawerLayout drawerLayout;
 
     private BluetoothAdapter bluetoothAdapter;
     private boolean bound = false;
+    private Intent drawerIntent = null;
+    private String selectedDeviceAddress = null;
+    private NavigationView navigationView;
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -56,6 +74,15 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
             MainActivity.this.service = ((BluetoothMessengerService.BluetoothBinder) service).getService();
             MainActivity.this.service.setReader(MainActivity.this);
             bound = true;
+
+            if (MainActivity.this.service.getSelectedDevice() == null) {
+                SharedPreferences preferences = getApplication().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+                if (preferences.contains(BluetoothMessengerService.PREFERENCES_DEVICE_KEY)) {
+                    String deviceAddress = preferences.getString(BluetoothMessengerService.PREFERENCES_DEVICE_KEY, "none");
+                    Optional<BluetoothDevice> device = bluetoothAdapter.getBondedDevices().stream().filter(d -> d.getAddress().equals(deviceAddress)).findFirst();
+                    device.ifPresent(MainActivity.this.service::setSelectedDevice);
+                }
+            }
         }
 
         @Override
@@ -73,6 +100,12 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
                 case BluetoothMessengerService.MessageConstants.TO_CONNECTION_SUCCESS:
                     initProgress.clearAnimation();
                     initProgress.setVisibility(View.INVISIBLE);
+                    if (intent.hasExtra("data")) {
+                        Toast.makeText(MainActivity.this,
+                                getString(R.string.no_device_selected),
+                                Toast.LENGTH_LONG).show();
+                        break;
+                    }
                     runOnUiThread(() -> {
                         Toast.makeText(MainActivity.this,
                                 intent.getIntExtra("type", 0) == 0
@@ -121,15 +154,23 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
 
         TextView soilMoistureData = findViewById(R.id.moistureSensorData);
         Optional.ofNullable(savedInstanceState).map(state -> state.getString("savedMoistureData")).ifPresent(soilMoistureData::setText);
-
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, actionBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawerLayout, actionBar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                if (drawerIntent != null) {
+                    startActivity(drawerIntent);
+                    drawerIntent = null;
+                }
+            }
+        };
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
         toggle.setDrawerSlideAnimationEnabled(false);
 
-        NavigationView navigationView = findViewById(R.id.navigation_view);
+        navigationView = findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this::navigationMenuSelect);
+        navigationView.setCheckedItem(R.id.nav_main);
 
         Intent serviceIntent = new Intent(this, BluetoothMessengerService.class);
         startService(serviceIntent);
@@ -174,7 +215,12 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
                 initProgress.setVisibility(View.INVISIBLE);
             }
 
-            Optional<BluetoothDevice> bluetoothDevice = bluetoothAdapter.getBondedDevices().stream().filter((device) -> device.getName().equals("Watering-Can")).findFirst();
+            if (service.getSelectedDevice() != null) {
+                service.connect(false);
+                return;
+            }
+
+            Optional<BluetoothDevice> bluetoothDevice = bluetoothAdapter.getBondedDevices().stream().findFirst();
             if (!bluetoothDevice.isPresent())
                 Toast.makeText(this, "Device not paired", Toast.LENGTH_LONG).show();
 
@@ -196,32 +242,22 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
                 Intent intent = new Intent(this, Main2Activity.class);
                 startActivity(intent);
                 return true;
-            default:
-                return super.onOptionsItemSelected(item);
         }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
     }
 
     public boolean navigationMenuSelect(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.nav_item:
-                break;
-            case R.id.nav_bluetooth:
-                Intent intent = new Intent(this, BluetoothActivity.class);
-                startActivity(intent);
-
-                break;
-        }
-
+        drawerIntent = MainActivity.mainNavigationMenuSelect(this, item);
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }

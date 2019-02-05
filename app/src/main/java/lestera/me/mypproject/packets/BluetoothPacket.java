@@ -9,6 +9,7 @@ public abstract class BluetoothPacket {
     private static final SparseArray<Function<ByteBuffer, BluetoothPacket>> incomingPackets
             = new SparseArray<Function<ByteBuffer, BluetoothPacket>>() {{
         append(0x00, IncomingHumidityDataPacket::new);
+        append(0x01, IncomingPlantDataPacket::new);
     }};
 
     public static BluetoothPacket obtain(byte[] bytes) {
