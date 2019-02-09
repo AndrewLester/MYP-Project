@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -15,9 +14,9 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Optional;
 import java.util.UUID;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import lestera.me.mypproject.packets.BluetoothPacket;
 
 public class BluetoothMessengerService extends Service {
@@ -264,7 +263,9 @@ public class BluetoothMessengerService extends Service {
 
                         inputStream.read(data, 2, length);
 
-                        reader.bluetoothRead(BluetoothPacket.obtain(data));
+                        if (reader != null) {
+                            reader.bluetoothRead(BluetoothPacket.obtain(data));
+                        }
                     }
 
                 } catch (IOException | ArrayIndexOutOfBoundsException e) {

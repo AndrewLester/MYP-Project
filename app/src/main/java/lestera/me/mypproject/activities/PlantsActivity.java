@@ -7,37 +7,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.os.IBinder;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.os.IBinder;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.material.navigation.NavigationView;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import lestera.me.mypproject.BluetoothMessengerService;
-import lestera.me.mypproject.Plant;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.fragments.CardListFragment;
-import lestera.me.mypproject.fragments.ItemListFragment;
+import lestera.me.mypproject.fragments.ListFragmentInteractionListener;
 import lestera.me.mypproject.fragments.NoConnectionFragment;
-import lestera.me.mypproject.fragments.PlantFragment;
+import lestera.me.mypproject.model.Plant;
 import lestera.me.mypproject.packets.BluetoothPacket;
 import lestera.me.mypproject.packets.IncomingPlantDataPacket;
 import lestera.me.mypproject.packets.IncomingPlantNumberPacket;
-import lestera.me.mypproject.packets.OutgoingLEDPacket;
-import lestera.me.mypproject.packets.OutgoingRequestNumberPacket;
 
 public class PlantsActivity extends AppCompatActivity implements
-        ItemListFragment.OnListFragmentInteractionListener<Plant>,
+        ListFragmentInteractionListener<Plant>,
         BluetoothMessengerService.Reader {
 
     private static final String FRAGMENT_TAG = "card_list_fragment";
@@ -62,6 +59,7 @@ public class PlantsActivity extends AppCompatActivity implements
         @Override
         public void onServiceDisconnected(ComponentName className) {
             bound = false;
+            PlantsActivity.this.service.setReader(null);
             PlantsActivity.this.service = null;
         }
     };
@@ -167,27 +165,20 @@ public class PlantsActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onListFragmentInteraction(Plant item, int resourceId) {
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-    }
-
-    public void requestPlantNumber() {
-        if (!bound || !service.isConnected()) return;
-
-        service.write(new OutgoingRequestNumberPacket());
-    }
-
-    @Override
     public void bluetoothRead(BluetoothPacket packet) {
         CardListFragment fragment = (CardListFragment) fragmentManager.findFragmentByTag(FRAGMENT_TAG);
         if (packet instanceof IncomingPlantNumberPacket) {
             IncomingPlantNumberPacket plantNumberPacket = (IncomingPlantNumberPacket) packet;
 
 
-            fragment.updatePlantNumber(plantNumberPacket.getPlantNumber());
+            //fragment.updatePlantNumber(plantNumberPacket.getPlantNumber());
         } else if (packet instanceof IncomingPlantDataPacket) {
             IncomingPlantDataPacket plantDataPacket = (IncomingPlantDataPacket) packet;
-            fragment.plantLoaded();
         }
+    }
+
+    @Override
+    public void onInteraction(Plant element, int position) {
+        //TODO: OPEN PLANT SPECIFIC VIEW
     }
 }

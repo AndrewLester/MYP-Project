@@ -1,10 +1,7 @@
 package lestera.me.mypproject.fragments;
 
 import android.content.Context;
-import android.os.Parcel;
-import android.support.v4.app.Fragment;
-import android.util.ArraySet;
-import android.util.Log;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,30 +10,28 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ethanhua.skeleton.Skeleton;
-import com.ethanhua.skeleton.SkeletonScreen;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
-import lestera.me.mypproject.BluetoothMessengerService;
-import lestera.me.mypproject.Plant;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.activities.PlantsActivity;
-import lestera.me.mypproject.packets.OutgoingLEDPacket;
+import lestera.me.mypproject.model.Plant;
+import lestera.me.mypproject.viewmodel.PlantAdapter;
+import lestera.me.mypproject.viewmodel.PlantViewModel;
 
-public class CardListFragment extends ItemListFragment<Plant> {
+public class CardListFragment extends Fragment {
 
     private static final String PLANT_FILE_PREFIX = "plant";
 
@@ -52,80 +47,45 @@ public class CardListFragment extends ItemListFragment<Plant> {
         return new CardListFragment();
     }
 
+    private PlantViewModel plantViewModel;
+    private ListFragmentInteractionListener<Plant> listener;
+
     @Override
-    public View getView(int position, View convertView, ViewGroup parent, int layout, Function<Integer, Plant> getItem) {
-        PlantViewHolder plantViewHolder;
-
-        if (convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(layout, parent, false);
-
-            PlantViewHolder viewHolder = new PlantViewHolder();
-            viewHolder.thumbnail = convertView.findViewById(R.id.card_image);
-            viewHolder.thumbnail.setImageURI(getItem.apply(position).getImageUri());
-            viewHolder.title = convertView.findViewById(R.id.card_title);
-            viewHolder.title.setText(getItem.apply(position).getName());
-            viewHolder.viewButton.setOnClickListener(v -> notifyInteraction(getItem.apply(position), position));
-
-            convertView.setTag(viewHolder);
-        } else {
-            plantViewHolder = (PlantViewHolder) convertView.getTag();
-            plantViewHolder.title.setText(getItem.apply(position).getName());
-            plantViewHolder.thumbnail.setImageURI(getItem.apply(position).getImageUri());
-        }
-
-        return convertView;
-    }
-
-    private Optional<List<Plant>> getPlantsFromCache() {
-        List<Plant> plantList = new ArrayList<>();
-        File cacheDir = getContext().getCacheDir();
-        for (File file : cacheDir.listFiles((d, n) -> n.startsWith(PLANT_FILE_PREFIX))) {
-            try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(file))) {
-                plantList.add((Plant) inputStream.readObject());
-            } catch (IOException | ClassNotFoundException e) {
-                return Optional.empty();
-            }
-        }
-
-        return Optional.of(plantList);
-    }
-
-    public void updatePlantNumber(int plantNumber) {
-        for (int i = 0; i < plantNumber; i++) {
-            list.add(new Plant("SkeletonPlant" + i, "SkeletonPlant" + i));
-        }
-    }
-
-    private List<Plant> requestPlantData() {
-        ((PlantsActivity) getActivity()).requestPlantNumber();
-        return new ArrayList<>();
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override
-    public List<Plant> getPopulatingList() {
-        Optional<List<Plant>> optionalPlants = getPlantsFromCache();
-        List<Plant> plants = optionalPlants.orElseGet(this::requestPlantData);
-        plants.sort(Comparator.comparingInt(Plant::getId));
-        return plants;
-    }
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_item_list, container, false);
 
-    public void plantLoaded(Plant plant) {
+        RecyclerView recyclerView = (RecyclerView) view;
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setHasFixedSize(true);
 
-        // TODO: Hide view skeleton for plant
-        // TODO: Change view contents for plant
-        // TODO: Cache plant
+        PlantAdapter adapter = new PlantAdapter();
+        recyclerView.setAdapter(adapter);
+
+        plantViewModel = ViewModelProviders.of(this).get(PlantViewModel.class);
+        plantViewModel.getAllPlants().observe(this, adapter::setPlants);
+        return view;
     }
 
     @Override
-    public int getListViewItem() {
-        return R.layout.card_item;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            listener = (ListFragmentInteractionListener<Plant>) context;
+        } catch (ClassCastException e) {
+            throw new RuntimeException(context.toString()
+                    + " must use ListFragmentInteractionListener with type Plant.");
+        }
     }
 
-    public class PlantViewHolder {
-        ImageView thumbnail;
-        TextView title;
-        Button shareButton;
-        Button viewButton;
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
+
 }

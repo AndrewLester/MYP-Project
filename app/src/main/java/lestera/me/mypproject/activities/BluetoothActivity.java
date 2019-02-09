@@ -11,30 +11,30 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.material.navigation.NavigationView;
+
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import lestera.me.mypproject.BluetoothMessengerService;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.fragments.BluetoothItemListFragment;
-import lestera.me.mypproject.fragments.ItemListFragment;
+import lestera.me.mypproject.fragments.ListFragmentInteractionListener;
 import lestera.me.mypproject.fragments.NoConnectionFragment;
 import lestera.me.mypproject.packets.BluetoothPacket;
 
 public class BluetoothActivity extends AppCompatActivity implements
-        ItemListFragment.OnListFragmentInteractionListener<BluetoothDevice>,
+        ListFragmentInteractionListener<BluetoothDevice>,
         BluetoothMessengerService.Reader {
 
     private DrawerLayout drawerLayout;
@@ -55,6 +55,7 @@ public class BluetoothActivity extends AppCompatActivity implements
         @Override
         public void onServiceDisconnected(ComponentName className) {
             bound = false;
+            BluetoothActivity.this.service.setReader(null);
             BluetoothActivity.this.service = null;
         }
     };
@@ -191,12 +192,12 @@ public class BluetoothActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onListFragmentInteraction(BluetoothDevice device, int resourceId) {
+    public void bluetoothRead(BluetoothPacket packet) { }
+
+    @Override
+    public void onInteraction(BluetoothDevice device, int position) {
         service.setSelectedDevice(device);
         SharedPreferences preferences = getApplication().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         preferences.edit().putString(BluetoothMessengerService.PREFERENCES_DEVICE_KEY, device.getAddress()).apply();
     }
-
-    @Override
-    public void bluetoothRead(BluetoothPacket packet) { }
 }

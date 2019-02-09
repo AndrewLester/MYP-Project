@@ -1,20 +1,19 @@
 package lestera.me.mypproject.fragments;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import lestera.me.mypproject.PlantViewModel;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import lestera.me.mypproject.viewmodel.PlantViewModel;
 import lestera.me.mypproject.R;
 
 public class PlantFragment extends Fragment {
 
-    private PlantViewModel mViewModel;
+    private PlantViewModel plantViewModel;
 
     public static PlantFragment newInstance() {
         return new PlantFragment();
@@ -29,7 +28,7 @@ public class PlantFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = ViewModelProviders.of(this).get(PlantViewModel.class);
+        //mViewModel = ViewModelProviders.of(this).get(PlantViewModel.class);
         // TODO: Use the ViewModel
     }
 
