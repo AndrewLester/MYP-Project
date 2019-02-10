@@ -31,12 +31,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import lestera.me.mypproject.BluetoothMessengerService;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.packets.BluetoothPacket;
 import lestera.me.mypproject.packets.IncomingHumidityDataPacket;
 import lestera.me.mypproject.packets.OutgoingLEDPacket;
+import lestera.me.mypproject.viewmodel.BluetoothDeviceViewModel;
 
 public class MainActivity extends AppCompatActivity implements BluetoothMessengerService.Reader {
 
@@ -66,8 +68,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
     private BluetoothAdapter bluetoothAdapter;
     private boolean bound = false;
     private Intent drawerIntent = null;
-    private String selectedDeviceAddress = null;
     private NavigationView navigationView;
+    private BluetoothDeviceViewModel deviceViewModel;
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -75,15 +77,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
             MainActivity.this.service = ((BluetoothMessengerService.BluetoothBinder) service).getService();
             MainActivity.this.service.setReader(MainActivity.this);
             bound = true;
-
-            if (MainActivity.this.service.getSelectedDevice() == null) {
-                SharedPreferences preferences = getApplication().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-                if (preferences.contains(BluetoothMessengerService.PREFERENCES_DEVICE_KEY)) {
-                    String deviceAddress = preferences.getString(BluetoothMessengerService.PREFERENCES_DEVICE_KEY, "none");
-                    Optional<BluetoothDevice> device = bluetoothAdapter.getBondedDevices().stream().filter(d -> d.getAddress().equals(deviceAddress)).findFirst();
-                    device.ifPresent(MainActivity.this.service::setSelectedDevice);
-                }
-            }
         }
 
         @Override
@@ -174,6 +167,11 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
         navigationView.setNavigationItemSelectedListener(this::navigationMenuSelect);
         navigationView.setCheckedItem(R.id.nav_main);
 
+        deviceViewModel = ViewModelProviders.of(this).get(BluetoothDeviceViewModel.class);
+        TextView deviceIndicator = navigationView.getHeaderView(0).findViewById(R.id.device_indicator_text);
+        deviceViewModel.getSelectedDevice().observe(this, d -> deviceIndicator.setText(
+                d != null ? "Device: " + d.getName() : getString(R.string.nav_header_subtitle)));
+
         Intent serviceIntent = new Intent(this, BluetoothMessengerService.class);
         startService(serviceIntent);
         bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
@@ -217,8 +215,8 @@ public class MainActivity extends AppCompatActivity implements BluetoothMessenge
                 initProgress.setVisibility(View.INVISIBLE);
             }
 
-            if (service.getSelectedDevice() != null) {
-                service.connect(false);
+            if (deviceViewModel.getSelectedDevice().getValue() != null) {
+                service.connect(deviceViewModel.getSelectedDevice().getValue(), false);
                 return;
             }
 

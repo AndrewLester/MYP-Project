@@ -1,7 +1,6 @@
 package lestera.me.mypproject.viewmodel;
 
 import android.bluetooth.BluetoothDevice;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +13,12 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import lestera.me.mypproject.R;
+import lestera.me.mypproject.fragments.OnItemClickListener;
 
 public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.BluetoothDeviceHolder> {
 
     private List<BluetoothDevice> devices = new ArrayList<>();
+    private OnItemClickListener<BluetoothDevice> listener;
 
     @NonNull
     @Override
@@ -55,6 +56,16 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
             title = itemView.findViewById(R.id.list_item_text);
             subtitle = itemView.findViewById(R.id.list_item_subtext);
             button = itemView.findViewById(R.id.list_item_button);
+
+            button.setOnClickListener(v -> {
+                if (listener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
+                    listener.onItemClick(devices.get(getAdapterPosition()));
+                }
+            });
         }
+    }
+
+    public void setOnItemClickListener(OnItemClickListener<BluetoothDevice> listener) {
+        this.listener = listener;
     }
 }

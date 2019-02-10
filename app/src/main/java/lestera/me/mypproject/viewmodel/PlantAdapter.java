@@ -14,11 +14,13 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import lestera.me.mypproject.R;
+import lestera.me.mypproject.fragments.OnItemClickListener;
 import lestera.me.mypproject.model.Plant;
 
 public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder> {
 
     private List<Plant> plants = new ArrayList<>();
+    private OnItemClickListener<Plant> listener;
 
     @NonNull
     @Override
@@ -55,12 +57,24 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder>
 
         public PlantHolder(@NonNull View itemView) {
             super(itemView);
-
             thumbnail = itemView.findViewById(R.id.card_image);
             title = itemView.findViewById(R.id.card_title);
             description = itemView.findViewById(R.id.card_description);
             shareButton = itemView.findViewById(R.id.card_button_share);
             viewButton = itemView.findViewById(R.id.card_button_view);
+
+            View.OnClickListener clickListener = v -> {
+                if (listener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
+                    listener.onItemClick(plants.get(getAdapterPosition()));
+                }
+            };
+
+            viewButton.setOnClickListener(clickListener);
+            itemView.setOnClickListener(clickListener);
         }
+    }
+
+    public void setOnItemClickListener(OnItemClickListener<Plant> listener) {
+        this.listener = listener;
     }
 }

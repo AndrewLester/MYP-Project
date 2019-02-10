@@ -3,7 +3,6 @@ package lestera.me.mypproject.fragments;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,27 +17,25 @@ import lestera.me.mypproject.R;
 import lestera.me.mypproject.viewmodel.BluetoothDeviceAdapter;
 import lestera.me.mypproject.viewmodel.BluetoothDeviceViewModel;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link ListFragmentInteractionListener}
- * interface.
- */
 public class BluetoothItemListFragment extends Fragment {
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public BluetoothItemListFragment() {}
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static BluetoothItemListFragment newInstance(int columnCount) {
+    public static BluetoothItemListFragment newInstance() {
         return new BluetoothItemListFragment();
     }
 
     private BluetoothDeviceViewModel deviceViewModel;
-    private ListFragmentInteractionListener<BluetoothDevice> listener;
+    private BluetoothDeviceAdapter adapter;
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        deviceViewModel = ViewModelProviders.of(getActivity()).get(BluetoothDeviceViewModel.class);
+        deviceViewModel.getAllDevices().observe(getViewLifecycleOwner(), adapter::setBluetoothDevices);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,28 +46,13 @@ public class BluetoothItemListFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
 
-        BluetoothDeviceAdapter adapter = new BluetoothDeviceAdapter();
+        adapter = new BluetoothDeviceAdapter();
         recyclerView.setAdapter(adapter);
 
-        deviceViewModel = ViewModelProviders.of(this).get(BluetoothDeviceViewModel.class);
-        deviceViewModel.getAllDevices().observe(this, adapter::setBluetoothDevices);
+        adapter.setOnItemClickListener(device -> {
+            Toast.makeText(getContext(), "Selected: " + device.getName(), Toast.LENGTH_SHORT).show();
+            deviceViewModel.setSelectedDevice(device);
+        });
         return view;
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        try {
-            listener = (ListFragmentInteractionListener<BluetoothDevice>) context;
-        } catch (ClassCastException e) {
-            throw new RuntimeException(context.toString()
-                    + " must use ListFragmentInteractionListener with type BluetoothDevice.");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
     }
 }

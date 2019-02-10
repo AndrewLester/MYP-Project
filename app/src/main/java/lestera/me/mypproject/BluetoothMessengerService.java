@@ -23,7 +23,6 @@ public class BluetoothMessengerService extends Service {
     private static final UUID MY_UUID_INSECURE = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     private static final String TAG = "MY_APP_DEBUG_TAG";
     public static final String PREFERENCES_DEVICE_KEY = "selected_bluetooth_device";
-    public static final String PREFERENCES_DEVICES_COUNT = "devices_number";
 
     public static class MessageConstants {
         public static final String INTENT_ACTION = "mypproject.broadcast.intent";
@@ -44,7 +43,6 @@ public class BluetoothMessengerService extends Service {
     private ConnectThread connectThread;
     private ConnectedThread connectedThread;
     private Reader reader;
-    private BluetoothDevice selectedDevice;
     private final IBinder binder = new BluetoothBinder();
 
     @Override
@@ -60,17 +58,6 @@ public class BluetoothMessengerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int id, int startFlags) {
         return super.onStartCommand(intent, id, startFlags);
-    }
-
-    public synchronized void connect(boolean secure) {
-        if (selectedDevice == null) {
-            Intent intent = new Intent(MessageConstants.INTENT_ACTION);
-            intent.putExtra("type", MessageConstants.TO_CONNECTION_FAILURE);
-            intent.putExtra("data", getString(R.string.no_device_selected));
-            LocalBroadcastManager.getInstance(BluetoothMessengerService.this.getApplicationContext()).sendBroadcast(intent);
-            return;
-        }
-        connect(selectedDevice, secure);
     }
 
     public synchronized void connect(BluetoothDevice device, boolean secure) {
@@ -125,14 +112,6 @@ public class BluetoothMessengerService extends Service {
 
     public void setReader(Reader reader) {
         this.reader = reader;
-    }
-
-    public void setSelectedDevice(BluetoothDevice device) {
-        this.selectedDevice = device;
-    }
-
-    public BluetoothDevice getSelectedDevice() {
-        return this.selectedDevice;
     }
 
     public class BluetoothBinder extends Binder {

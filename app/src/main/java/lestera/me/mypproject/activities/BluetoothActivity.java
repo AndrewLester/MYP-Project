@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
@@ -25,16 +26,16 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import lestera.me.mypproject.BluetoothMessengerService;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.fragments.BluetoothItemListFragment;
-import lestera.me.mypproject.fragments.ListFragmentInteractionListener;
 import lestera.me.mypproject.fragments.NoConnectionFragment;
 import lestera.me.mypproject.packets.BluetoothPacket;
+import lestera.me.mypproject.viewmodel.BluetoothDeviceViewModel;
 
 public class BluetoothActivity extends AppCompatActivity implements
-        ListFragmentInteractionListener<BluetoothDevice>,
         BluetoothMessengerService.Reader {
 
     private DrawerLayout drawerLayout;
@@ -43,6 +44,8 @@ public class BluetoothActivity extends AppCompatActivity implements
     private NavigationView navigationView;
     private BluetoothMessengerService service;
     private boolean bound;
+    private TextView deviceIndicator;
+    private BluetoothDeviceViewModel deviceViewModel;
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -112,6 +115,11 @@ public class BluetoothActivity extends AppCompatActivity implements
             }
             fragmentTransaction.commit();
         }
+
+        deviceViewModel = ViewModelProviders.of(this).get(BluetoothDeviceViewModel.class);
+        deviceIndicator = navigationView.getHeaderView(0).findViewById(R.id.device_indicator_text);
+        deviceViewModel.getSelectedDevice().observe(this, d -> deviceIndicator.setText(
+                d != null ? "Device: " + d.getName() : getString(R.string.nav_header_subtitle)));
 
         Intent serviceIntent = new Intent(this, BluetoothMessengerService.class);
         bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
@@ -193,11 +201,4 @@ public class BluetoothActivity extends AppCompatActivity implements
 
     @Override
     public void bluetoothRead(BluetoothPacket packet) { }
-
-    @Override
-    public void onInteraction(BluetoothDevice device, int position) {
-        service.setSelectedDevice(device);
-        SharedPreferences preferences = getApplication().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        preferences.edit().putString(BluetoothMessengerService.PREFERENCES_DEVICE_KEY, device.getAddress()).apply();
-    }
 }
