@@ -118,8 +118,9 @@ public class BluetoothActivity extends AppCompatActivity implements
             fragmentTransaction.commit();
         }
 
-        deviceViewModel = ViewModelProviders.of(this).get(BluetoothDeviceViewModel.class);
         deviceIndicator = navigationView.getHeaderView(0).findViewById(R.id.device_indicator_text);
+
+        deviceViewModel = ViewModelProviders.of(this).get(BluetoothDeviceViewModel.class);
         deviceViewModel.getSelectedDevice().observe(this, d -> deviceIndicator.setText(
                 d != null ? "Device: " + d.getName() : getString(R.string.nav_header_subtitle)));
 
@@ -177,6 +178,9 @@ public class BluetoothActivity extends AppCompatActivity implements
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment());
+            fragmentTransaction.commit();
             return true;
         }
 
@@ -200,9 +204,10 @@ public class BluetoothActivity extends AppCompatActivity implements
     }
 
     public void onRetrySuccess() {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment())
-                .commit();
+        deviceViewModel.notifyAllDevicesChanged();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment());
+        fragmentTransaction.commit();
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,16 +19,14 @@ import lestera.me.mypproject.model.BluetoothDeviceRepository;
 
 public class BluetoothDeviceViewModel extends AndroidViewModel {
     private BluetoothDeviceRepository repository;
-    private MutableLiveData<List<BluetoothDevice>> allDevices;
-    private MutableLiveData<BluetoothDevice> selectedDevice;
+    private LiveData<List<BluetoothDevice>> allDevices;
+    private LiveData<BluetoothDevice> selectedDevice;
 
     public BluetoothDeviceViewModel(Application application) {
         super(application);
         repository = new BluetoothDeviceRepository(application);
-        allDevices = new MutableLiveData<>();
-        selectedDevice = new MutableLiveData<>();
-        allDevices.setValue(repository.getAllDevices());
-        selectedDevice.setValue(repository.getSelectedDevice());
+        allDevices = repository.getAllDevices();
+        selectedDevice = repository.getSelectedDevice();
     }
 
     public LiveData<BluetoothDevice> getSelectedDevice() {
@@ -36,7 +35,10 @@ public class BluetoothDeviceViewModel extends AndroidViewModel {
 
     public void setSelectedDevice(BluetoothDevice device) {
         repository.setSelectedDevice(device);
-        selectedDevice.setValue(device);
+    }
+
+    public void notifyAllDevicesChanged() {
+        repository.notifyAllDevicesChanged();
     }
 
     public LiveData<List<BluetoothDevice>> getAllDevices() {
