@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,7 +37,8 @@ import lestera.me.mypproject.packets.BluetoothPacket;
 import lestera.me.mypproject.viewmodel.BluetoothDeviceViewModel;
 
 public class BluetoothActivity extends AppCompatActivity implements
-        BluetoothMessengerService.Reader {
+        BluetoothMessengerService.Reader,
+        NoConnectionFragment.NoConnectionClickListener {
 
     private DrawerLayout drawerLayout;
     private FragmentManager fragmentManager;
@@ -192,11 +194,15 @@ public class BluetoothActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == NoConnectionFragment.REQUEST_BLUETOOTH_ENABLE) {
             if (resultCode == RESULT_OK) {
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment());
-                fragmentTransaction.commit();
+                onRetrySuccess();
             }
         }
+    }
+
+    public void onRetrySuccess() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment())
+                .commit();
     }
 
     @Override

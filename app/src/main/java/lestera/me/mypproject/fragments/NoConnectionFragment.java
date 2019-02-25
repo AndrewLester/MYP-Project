@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.ProgressBar;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import lestera.me.mypproject.R;
@@ -31,6 +33,7 @@ public class NoConnectionFragment extends Fragment {
     private ImageView bluetoothIcon;
     private ProgressBar progressBar;
     private Timer timer;
+    private NoConnectionClickListener listener;
 
     public NoConnectionFragment() {}
 
@@ -47,20 +50,18 @@ public class NoConnectionFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof NoConnectionClickListener) {
+            listener = (NoConnectionClickListener) context;
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_no_connection, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_no_connection, container, false);
 
         retryButton = view.findViewById(R.id.button_retry);
         retryButton.setOnClickListener(this::onRetryButtonClick);
@@ -69,11 +70,7 @@ public class NoConnectionFragment extends Fragment {
 
         bluetoothIcon = view.findViewById(R.id.bluetooth_disabled_icon);
         bluetoothIcon.setOnClickListener(this::interaction);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
+        return view;
     }
 
     @Override
@@ -83,6 +80,7 @@ public class NoConnectionFragment extends Fragment {
             timer.cancel();
         }
 
+        listener = null;
         progressBar.clearAnimation();
         progressBar.setVisibility(View.GONE);
         retryButton.setVisibility(View.VISIBLE);
@@ -116,11 +114,15 @@ public class NoConnectionFragment extends Fragment {
                 break;
             case R.id.button_retry:
                 if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                    FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.bluetooth_constraint_layout, new BluetoothItemListFragment());
-                    fragmentTransaction.commit();
+                    if (listener != null) {
+                        listener.onRetrySuccess();
+                    }
                 }
                 break;
         }
+    }
+
+    public interface NoConnectionClickListener {
+        void onRetrySuccess();
     }
 }

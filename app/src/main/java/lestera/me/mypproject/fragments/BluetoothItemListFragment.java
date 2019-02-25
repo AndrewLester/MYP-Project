@@ -1,5 +1,6 @@
 package lestera.me.mypproject.fragments;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.Bundle;
@@ -7,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import java.util.ArrayList;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
@@ -49,9 +52,13 @@ public class BluetoothItemListFragment extends Fragment {
         adapter = new BluetoothDeviceAdapter();
         recyclerView.setAdapter(adapter);
 
-        adapter.setOnItemClickListener(device -> {
-            Toast.makeText(getContext(), "Selected: " + device.getName(), Toast.LENGTH_SHORT).show();
-            deviceViewModel.setSelectedDevice(device);
+        adapter.setOnItemClickListener((i, v) -> {
+            switch (v.getId()) {
+                case R.id.list_item_button:
+                    Toast.makeText(getContext(), "Selected: " + adapter.getDeviceAt(i).getName(), Toast.LENGTH_SHORT).show();
+                    deviceViewModel.setSelectedDevice(adapter.getDeviceAt(i));
+                    break;
+            }
         });
         return view;
     }

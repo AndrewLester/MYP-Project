@@ -28,4 +28,7 @@
     <string name="no_device_selected">No bluetooth device is selected</string>
     <string name="plant_add_text">Add a plant</string>
     <string name="card_list_fragment_tag">card_list_fragment</string>
+    <string name="pick_image_intent_text">Select a photo or take a new one</string>
+    <string name="plant_fragment_button_save">SAVE</string>
+    <string name="menu_delete_all">Delete all plants</string>
 </resources>

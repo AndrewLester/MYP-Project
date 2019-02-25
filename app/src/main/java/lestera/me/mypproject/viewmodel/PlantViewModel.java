@@ -31,7 +31,7 @@ public class PlantViewModel extends AndroidViewModel {
         repository.delete(plant);
     }
 
-    public void deleteAllNotes() {
+    public void deleteAllPlants() {
         repository.deleteAllPlants();
     }
 

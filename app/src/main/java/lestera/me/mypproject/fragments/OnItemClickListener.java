@@ -1,5 +1,7 @@
 package lestera.me.mypproject.fragments;
 
-public interface OnItemClickListener<T> {
-    void onItemClick(T element);
+import android.view.View;
+
+public interface OnItemClickListener {
+    void onItemClick(int position, View view);
 }

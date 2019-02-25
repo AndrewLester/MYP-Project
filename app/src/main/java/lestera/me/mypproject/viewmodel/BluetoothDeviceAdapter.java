@@ -18,7 +18,7 @@ import lestera.me.mypproject.fragments.OnItemClickListener;
 public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.BluetoothDeviceHolder> {
 
     private List<BluetoothDevice> devices = new ArrayList<>();
-    private OnItemClickListener<BluetoothDevice> listener;
+    private OnItemClickListener listener;
 
     @NonNull
     @Override
@@ -45,6 +45,10 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
         notifyDataSetChanged();
     }
 
+    public BluetoothDevice getDeviceAt(int position) {
+        return devices.get(position);
+    }
+
     class BluetoothDeviceHolder extends RecyclerView.ViewHolder {
         private TextView title;
         private TextView subtitle;
@@ -59,13 +63,13 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
 
             button.setOnClickListener(v -> {
                 if (listener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
-                    listener.onItemClick(devices.get(getAdapterPosition()));
+                    listener.onItemClick(getAdapterPosition(), v);
                 }
             });
         }
     }
 
-    public void setOnItemClickListener(OnItemClickListener<BluetoothDevice> listener) {
+    public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 }

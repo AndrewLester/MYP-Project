@@ -1,21 +1,28 @@
 package lestera.me.mypproject.fragments;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import lestera.me.mypproject.R;
+import lestera.me.mypproject.model.Plant;
 import lestera.me.mypproject.viewmodel.PlantAdapter;
 import lestera.me.mypproject.viewmodel.PlantViewModel;
 
-public class CardListFragment extends Fragment {
+public class CardListFragment extends Fragment implements OnItemClickListener {
 
     public CardListFragment() {}
 
@@ -41,12 +48,13 @@ public class CardListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-        
+
         recyclerView = (RecyclerView) view;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
 
         adapter = new PlantAdapter();
+        adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
 
         ViewCompat.setNestedScrollingEnabled(recyclerView, false);
@@ -67,5 +75,36 @@ public class CardListFragment extends Fragment {
             recyclerView.scrollToPosition(position);
             Log.e("MOVED", String.valueOf(position));
         }
+    }
+
+    @Override
+    public void onItemClick(int position, View view) {
+        switch (view.getId()) {
+            case R.id.card_button_delete:
+                confirmDeletion("Delete this plant?", () -> {
+                    Toast.makeText(getActivity(), "Plant \"" + adapter.getPlantAt(position).getName() + "\" deleted", Toast.LENGTH_SHORT).show();
+                    plantViewModel.delete(adapter.getPlantAt(position));
+                });
+                break;
+            case R.id.card_button_share:
+                break;
+            case R.id.card_layout:
+                break;
+        }
+    }
+
+    public void deleteAllElements() {
+        confirmDeletion("Delete all plants?",
+                () -> plantViewModel.deleteAllPlants());
+    }
+
+    private void confirmDeletion(String message, Runnable onSuccess) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage(message).setPositiveButton("OK", (d, i) -> {
+            if (i == DialogInterface.BUTTON_POSITIVE) {
+                onSuccess.run();
+                d.dismiss();
+            }
+        }).setNegativeButton("CANCEL", (d, i) -> d.dismiss()).show();
     }
 }

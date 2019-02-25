@@ -14,6 +14,7 @@
 
         <ImageView
             android:id="@+id/card_image"
+            android:layout_marginTop="5dp"
             android:layout_width="match_parent"
             android:layout_height="160dp"
             android:scaleType="fitCenter"
@@ -54,10 +55,10 @@
                 android:theme="@style/PrimaryFlatButton" />
 
             <Button
-                android:id="@+id/card_button_view"
+                android:id="@+id/card_button_delete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="VIEW"
+                android:text="DELETE"
                 android:theme="@style/PrimaryFlatButton" />
         </LinearLayout>
     </LinearLayout>

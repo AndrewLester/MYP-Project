@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
+import lestera.me.mypproject.ImagePicker;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.fragments.OnItemClickListener;
 import lestera.me.mypproject.model.Plant;
@@ -20,7 +22,7 @@ import lestera.me.mypproject.model.Plant;
 public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder> {
 
     private List<Plant> plants = new ArrayList<>();
-    private OnItemClickListener<Plant> listener;
+    private OnItemClickListener listener;
 
     @NonNull
     @Override
@@ -33,7 +35,11 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder>
     @Override
     public void onBindViewHolder(@NonNull PlantHolder holder, int position) {
         Plant currentPlant = plants.get(position);
-        holder.thumbnail.setImageURI(currentPlant.getImageUri());
+        holder.thumbnail.setImageURI(null);
+        if (currentPlant.getImageUri() != null) {
+            holder.thumbnail.setImageDrawable(null);
+            holder.thumbnail.setImageURI(currentPlant.getImageUri());
+        }
         holder.title.setText(currentPlant.getName());
         holder.description.setText(currentPlant.getDescription());
     }
@@ -46,6 +52,10 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder>
     public void setPlants(List<Plant> plants) {
         this.plants = plants;
         notifyDataSetChanged();
+    }
+
+    public Plant getPlantAt(int position) {
+        return plants.get(position);
     }
 
     class PlantHolder extends RecyclerView.ViewHolder {
@@ -61,11 +71,11 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder>
             title = itemView.findViewById(R.id.card_title);
             description = itemView.findViewById(R.id.card_description);
             shareButton = itemView.findViewById(R.id.card_button_share);
-            viewButton = itemView.findViewById(R.id.card_button_view);
+            viewButton = itemView.findViewById(R.id.card_button_delete);
 
             View.OnClickListener clickListener = v -> {
                 if (listener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
-                    listener.onItemClick(plants.get(getAdapterPosition()));
+                    listener.onItemClick(getAdapterPosition(), v);
                 }
             };
 
@@ -74,7 +84,7 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder>
         }
     }
 
-    public void setOnItemClickListener(OnItemClickListener<Plant> listener) {
+    public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 }
