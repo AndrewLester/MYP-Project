@@ -1,5 +1,6 @@
 package lestera.me.mypproject.fragments;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.view.ViewCompat;
@@ -35,7 +37,16 @@ public class CardListFragment extends Fragment implements OnItemClickListener {
     private PlantViewModel plantViewModel;
     private PlantAdapter adapter;
     private RecyclerView recyclerView;
+    private PlantFragmentUpdateListener listener;
     private int position = -1;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof PlantFragmentUpdateListener) {
+            listener = (PlantFragmentUpdateListener) context;
+        }
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -89,6 +100,7 @@ public class CardListFragment extends Fragment implements OnItemClickListener {
             case R.id.card_button_share:
                 break;
             case R.id.card_layout:
+                listener.onItemClicked(adapter.getPlantAt(position));
                 break;
         }
     }
@@ -106,5 +118,9 @@ public class CardListFragment extends Fragment implements OnItemClickListener {
                 d.dismiss();
             }
         }).setNegativeButton("CANCEL", (d, i) -> d.dismiss()).show();
+    }
+
+    public interface PlantFragmentUpdateListener {
+        void onItemClicked(Plant plant);
     }
 }

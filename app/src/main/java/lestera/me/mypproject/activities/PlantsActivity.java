@@ -8,22 +8,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.Nullable;
@@ -31,7 +27,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -53,7 +48,7 @@ import lestera.me.mypproject.viewmodel.PlantViewModel;
 
 public class PlantsActivity extends AppCompatActivity implements
         BluetoothMessengerService.Reader,
-        PlantFragment.PlantFragmentUpdateListener,
+        CardListFragment.PlantFragmentUpdateListener,
         NoConnectionFragment.NoConnectionClickListener {
 
     private static final String FRAGMENT_TAG = "card_list_fragment";
@@ -69,12 +64,11 @@ public class PlantsActivity extends AppCompatActivity implements
     private NestedScrollView scrollView;
     private DrawerArrowDrawable drawerArrowDrawable;
     private AppBarLayout appBarLayout;
-    private CollapsingToolbarLayout collapsingToolbar;
-    private ImageView toolbarImage;
 
     private FragmentManager fragmentManager;
     private BluetoothMessengerService service;
     private CardListFragment cardListFragment;
+    private NoConnectionFragment noConnectionFragment;
     private ActionBarDrawerToggle toggle;
     private BluetoothDeviceViewModel deviceViewModel;
     private View.OnClickListener navigationIconClickListener;
@@ -118,8 +112,6 @@ public class PlantsActivity extends AppCompatActivity implements
         scrollView = findViewById(R.id.plants_scroll_view);
         actionBar = findViewById(R.id.activity_plants_toolbar);
         appBarLayout = findViewById(R.id.plants_appbar);
-        //collapsingToolbar = findViewById(R.id.collapsingToolbarLayout);
-        //toolbarImage = findViewById(R.id.imageViewCollapsing);
         actionBar.setTitle("Plants");
         setSupportActionBar(actionBar);
         getSupportActionBar().setTitle("Plants");
@@ -163,14 +155,12 @@ public class PlantsActivity extends AppCompatActivity implements
                 arrowAnimator.start();
                 drawerArrowDrawable.setVerticalMirror(true);
                 toggle.setDrawerIndicatorEnabled(false);
-                toggle.setToolbarNavigationClickListener(v -> {
-                    onBackPressed();
-                });
+                toggle.setToolbarNavigationClickListener(v -> onBackPressed());
             } else {
-                toggle.setDrawerIndicatorEnabled(true);
                 arrowAnimator.reverse();
+                toggle.setDrawerIndicatorEnabled(true);
                 drawerArrowDrawable.setVerticalMirror(false);
-                addPlantButton.setVisibility(cardListFragment != null ? View.VISIBLE : View.GONE);
+                addPlantButton.setVisibility(noConnectionFragment == null ? View.VISIBLE : View.GONE);
             }
         });
         addPlantButton.setOnClickListener(this::openNewPlantDialogue);
@@ -183,7 +173,8 @@ public class PlantsActivity extends AppCompatActivity implements
                 fragmentTransaction.add(R.id.plants_frame_layout, cardListFragment, FRAGMENT_TAG);
                 addPlantButton.setVisibility(View.VISIBLE);
             } else {
-                fragmentTransaction.add(R.id.plants_constraint_layout, new NoConnectionFragment(), BLUETOOTH_FRAGMENT_TAG);
+                noConnectionFragment = new NoConnectionFragment();
+                fragmentTransaction.add(R.id.plants_constraint_layout, noConnectionFragment, BLUETOOTH_FRAGMENT_TAG);
                 addPlantButton.setVisibility(View.GONE);
                 setScrollViewLayoutParams(linearLayout, true);
             }
@@ -280,8 +271,12 @@ public class PlantsActivity extends AppCompatActivity implements
     }
 
     public void openNewPlantDialogue(View view) {
+        openNewPlantDialogue(PlantFragment.NO_PLANT, null);
+    }
+
+    public void openNewPlantDialogue(int id, Plant plant) {
         fragmentManager.beginTransaction()
-                .replace(R.id.plants_frame_layout, new PlantFragment())
+                .replace(R.id.plants_frame_layout, PlantFragment.newInstance(id, plant))
                 .addToBackStack(PLANT_FRAGMENT_TAG)
                 .commit();
 
@@ -298,19 +293,6 @@ public class PlantsActivity extends AppCompatActivity implements
         } else if (packet instanceof IncomingPlantDataPacket) {
             IncomingPlantDataPacket plantDataPacket = (IncomingPlantDataPacket) packet;
         }
-    }
-
-    public boolean onFragmentSave(Bundle arguments) {
-        String title = arguments.getString(PlantFragment.PLANT_SAVE_NAME);
-        String description = arguments.getString(PlantFragment.PLANT_SAVE_DESCRIPTION);
-
-        Plant plant = new Plant(title, description);
-        if (arguments.containsKey(PlantFragment.PLANT_SAVE_URI)) {
-            String imageUri = arguments.getString(PlantFragment.PLANT_SAVE_URI);
-            plant.setImageUri(Uri.parse(imageUri));
-        }
-        plantViewModel.insert(plant);
-        return true;
     }
 
     public void onRetrySuccess() {
@@ -334,5 +316,10 @@ public class PlantsActivity extends AppCompatActivity implements
         );
         params.gravity = center ? Gravity.CENTER : Gravity.NO_GRAVITY;
         view.setLayoutParams(params);
+    }
+
+    @Override
+    public void onItemClicked(Plant plant) {
+        openNewPlantDialogue(plant.getId(), plant);
     }
 }

@@ -38,18 +38,23 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal">
 
-            <TextView
+            <EditText
                 android:id="@+id/plant_fragment_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
                 android:text="Plant"
+                android:imeOptions="actionDone"
+                android:imeActionLabel="Done"
                 android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                 tools:text="Plant" />
 
             <ImageView
-                android:layout_width="wrap_content"
+                android:id="@+id/plant_name_edit_button"
+                android:layout_width="@dimen/edit_text_button_width"
                 android:layout_height="match_parent"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:src="@drawable/ic_edit_black_24dp" />
         </LinearLayout>
 
@@ -60,18 +65,23 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dp">
 
-            <TextView
+            <EditText
                 android:id="@+id/plant_fragment_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
                 android:text="Description"
+                android:imeOptions="actionDone"
+                android:imeActionLabel="Done"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                tools:text="This is a cool plant look at it" />
+                tools:text="Lots of text more than the length of the screen please go @string/off_button_text" />
 
             <ImageView
-                android:layout_width="wrap_content"
+                android:id="@+id/plant_description_edit_button"
+                android:layout_width="23dp"
                 android:layout_height="match_parent"
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:src="@drawable/ic_edit_black_24dp" />
         </LinearLayout>
     </LinearLayout>
@@ -85,10 +95,12 @@
         android:layout_marginEnd="40dp"
         android:layout_marginBottom="8dp"
         android:text="@string/plant_fragment_button_save"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="0.15" />
+        app:layout_constraintVertical_bias="0.15"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

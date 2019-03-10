@@ -6,6 +6,7 @@ import android.os.Parcelable;
 
 import java.io.Serializable;
 
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -42,11 +43,39 @@ public class Plant {
         return imageUri;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public String toString() {
+        return "Plant[" + "name=" + name + ",description=" +
+                description + ",imageUri=" + imageUri.toString() + "]";
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!(obj instanceof Plant)) {
+            return false;
+        }
+
+        Plant plant = (Plant) obj;
+        return plant.getId() == getId() && plant.getName().equals(getName()) && plant.getDescription().equals(getDescription()) &&
+                plant.getImageUri().equals(getImageUri());
     }
 }

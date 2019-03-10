@@ -2,8 +2,10 @@ package lestera.me.mypproject.model;
 
 import android.app.Application;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import androidx.lifecycle.LiveData;
 
@@ -93,5 +95,4 @@ public class PlantRepository {
             return null;
         }
     }
-
 }
