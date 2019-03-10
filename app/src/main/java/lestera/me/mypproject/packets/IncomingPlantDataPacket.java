@@ -10,6 +10,7 @@ public final class IncomingPlantDataPacket extends BluetoothPacket {
     // Left to Right: Unused | Unused | Unused | Unused | Unused | Unused | Unused | Watering
     private byte plantStates = 0b00000000;
     private byte[] buffer;
+    private int nextWatering;
 
     protected IncomingPlantDataPacket(ByteBuffer buff) {
         super((byte) 0x01);
@@ -17,6 +18,7 @@ public final class IncomingPlantDataPacket extends BluetoothPacket {
         this.buffer = buff.array();
         this.plantId = buff.get(2);
         this.plantStates = buff.get(3);
+        this.nextWatering = buff.getInt(4);
     }
 
     public int getPlantId() {
@@ -29,7 +31,7 @@ public final class IncomingPlantDataPacket extends BluetoothPacket {
 
     @Override
     public byte getDataLength() {
-        return 0x02;
+        return 0x05;
     }
 
     @Override

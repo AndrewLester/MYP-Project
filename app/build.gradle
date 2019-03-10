@@ -41,6 +41,7 @@ dependencies {
     def lifecycle_version = "2.0.0"
     def room_version = "2.1.0-alpha04"
 
+    implementation 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.github.nirhart:parallaxscroll:1.0'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.0.2'

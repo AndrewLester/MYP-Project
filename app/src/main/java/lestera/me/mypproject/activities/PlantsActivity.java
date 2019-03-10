@@ -1,6 +1,7 @@
 package lestera.me.mypproject.activities;
 
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -15,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -157,7 +159,10 @@ public class PlantsActivity extends AppCompatActivity implements
                 toggle.setDrawerIndicatorEnabled(false);
                 toggle.setToolbarNavigationClickListener(v -> onBackPressed());
             } else {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                 arrowAnimator.reverse();
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                getSupportActionBar().setTitle("Plants");
                 toggle.setDrawerIndicatorEnabled(true);
                 drawerArrowDrawable.setVerticalMirror(false);
                 addPlantButton.setVisibility(noConnectionFragment == null ? View.VISIBLE : View.GONE);
@@ -204,6 +209,7 @@ public class PlantsActivity extends AppCompatActivity implements
             });
         } else {
             toggle.setDrawerIndicatorEnabled(true);
+            getSupportActionBar().setTitle("Plants");
             drawerArrowDrawable.setVerticalMirror(false);
             addPlantButton.setVisibility(BluetoothAdapter.getDefaultAdapter().isEnabled() ? View.VISIBLE : View.GONE);
         }

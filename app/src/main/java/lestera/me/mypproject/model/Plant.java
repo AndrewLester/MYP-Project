@@ -39,6 +39,7 @@ public class Plant {
         this.imageUri = imageUri;
     }
 
+    @Nullable
     public Uri getImageUri() {
         return imageUri;
     }
@@ -64,18 +65,18 @@ public class Plant {
                 description + ",imageUri=" + imageUri.toString() + "]";
     }
 
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (obj == null) {
-            return false;
-        }
-
-        if (!(obj instanceof Plant)) {
-            return false;
-        }
-
-        Plant plant = (Plant) obj;
-        return plant.getId() == getId() && plant.getName().equals(getName()) && plant.getDescription().equals(getDescription()) &&
-                plant.getImageUri().equals(getImageUri());
-    }
+//    @Override
+//    public boolean equals(@Nullable Object obj) {
+//        if (obj == null) {
+//            return false;
+//        }
+//
+//        if (!(obj instanceof Plant)) {
+//            return false;
+//        }
+//
+//        Plant plant = (Plant) obj;
+//        return plant.getId() == getId() && plant.getName().equals(getName()) && plant.getDescription().equals(getDescription()) &&
+//                plant.getImageUri().equals(getImageUri());
+//    }
 }

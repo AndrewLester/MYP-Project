@@ -8,21 +8,54 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import lestera.me.mypproject.ImagePicker;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.fragments.OnItemClickListener;
 import lestera.me.mypproject.model.Plant;
 
-public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder> {
+public class PlantAdapter extends ListAdapter<Plant, PlantAdapter.PlantHolder> {
 
-    private List<Plant> plants = new ArrayList<>();
+    private static final DiffUtil.ItemCallback<Plant> DIFF_CALLBACK = new DiffUtil.ItemCallback<Plant>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Plant oldItem, @NonNull Plant newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Plant oldItem, @NonNull Plant newItem) {
+            boolean imagesSame = false;
+            if (oldItem.getImageUri() == null || newItem.getImageUri() == null) {
+                if (oldItem.getImageUri() == newItem.getImageUri()) {
+                    imagesSame = true;
+                }
+            } else {
+                imagesSame = oldItem.getImageUri().equals(newItem.getImageUri());
+            }
+
+            return oldItem.getId() == newItem.getId() &&
+                    oldItem.getName().equals(newItem.getName()) &&
+                    oldItem.getDescription().equals(newItem.getDescription()) &&
+                    imagesSame;
+        }
+    };
+
     private OnItemClickListener listener;
+
+    public PlantAdapter() {
+        super(DIFF_CALLBACK);
+    }
 
     @NonNull
     @Override
@@ -34,28 +67,23 @@ public class PlantAdapter extends RecyclerView.Adapter<PlantAdapter.PlantHolder>
 
     @Override
     public void onBindViewHolder(@NonNull PlantHolder holder, int position) {
-        Plant currentPlant = plants.get(position);
+        Plant currentPlant = getItem(position);
         holder.thumbnail.setImageURI(null);
         if (currentPlant.getImageUri() != null) {
             holder.thumbnail.setImageDrawable(null);
-            holder.thumbnail.setImageURI(currentPlant.getImageUri());
+            Picasso.with(holder.thumbnail.getContext())
+                    .load(currentPlant.getImageUri())
+                    .fit()
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_add_a_photo_black_24dp)
+                    .into(holder.thumbnail);
         }
         holder.title.setText(currentPlant.getName());
         holder.description.setText(currentPlant.getDescription());
     }
 
-    @Override
-    public int getItemCount() {
-        return plants.size();
-    }
-
-    public void setPlants(List<Plant> plants) {
-        this.plants = plants;
-        notifyDataSetChanged();
-    }
-
     public Plant getPlantAt(int position) {
-        return plants.get(position);
+        return getItem(position);
     }
 
     class PlantHolder extends RecyclerView.ViewHolder {

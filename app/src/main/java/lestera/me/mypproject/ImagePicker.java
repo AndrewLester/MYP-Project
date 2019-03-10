@@ -77,7 +77,6 @@ public class ImagePicker {
     public static Pair<Uri, Bitmap> getImageFromResult(Context context, int resultCode,
                                                  Intent imageReturnedIntent) {
         Log.d(TAG, "getImageFromResult, resultCode: " + resultCode);
-        Bitmap bm = null;
         File imageFile = getTempFile(context);
         Uri selectedImage = null;
         if (resultCode == Activity.RESULT_OK) {
@@ -91,14 +90,8 @@ public class ImagePicker {
             }
             Log.d(TAG, "selectedImage: " + selectedImage);
 
-            bm = getImageResized(context, selectedImage);
-            int rotation = getRotation(context, selectedImage, isCamera);
-            if (bm.getHeight() <= bm.getWidth()) {
-                bm = rotate(bm, rotation);
-            }
-
         }
-        return Pair.create(selectedImage, bm);
+        return Pair.create(selectedImage, null);
     }
 
 

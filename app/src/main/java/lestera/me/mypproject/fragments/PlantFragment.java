@@ -21,6 +21,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -92,8 +94,14 @@ public class PlantFragment extends Fragment {
         if (arguments != null && arguments.getInt(PLANT_SAVE_ID, NO_PLANT) != NO_PLANT) {
             name.setText(arguments.getString(PLANT_SAVE_NAME));
             description.setText(arguments.getString(PLANT_SAVE_DESCRIPTION));
-            if (arguments.containsKey(PLANT_SAVE_URI) && !arguments.getString(PLANT_SAVE_URI).equals(""))
-                mainImage.setImageURI(Uri.parse(arguments.getString(PLANT_SAVE_URI)));
+            if (arguments.containsKey(PLANT_SAVE_URI) && !arguments.getString(PLANT_SAVE_URI).equals("")) {
+                Picasso.with(getContext())
+                        .load(Uri.parse(arguments.getString(PLANT_SAVE_URI)))
+                        .fit()
+                        .centerInside()
+                        .placeholder(R.drawable.ic_add_a_photo_black_24dp)
+                        .into(mainImage);
+            }
         }
 
         saveButton.setOnClickListener(v -> savePlant());
@@ -147,12 +155,18 @@ public class PlantFragment extends Fragment {
 
         if (resultCode == Activity.RESULT_OK && requestCode == IMAGE_REQUEST_CODE) {
             Pair<Uri, Bitmap> image = ImagePicker.getImageFromResult(getActivity(), resultCode, data);
-            if (image.first != null && image.second != null) {
+            if (image.first != null) {
                 mainImage.setImageDrawable(null);
                 mainImage.setImageURI(null);
-                mainImage.setImageURI(image.first);
+                Picasso.with(getContext())
+                        .load(image.first)
+                        .fit()
+                        .centerInside()
+                        .placeholder(R.drawable.ic_add_a_photo_black_24dp)
+                        .into(mainImage);
                 imageUri = image.first;
-                mainImage.setImageBitmap(image.second);
+
+                saveButton.setVisibility(View.VISIBLE);
             }
         }
     }

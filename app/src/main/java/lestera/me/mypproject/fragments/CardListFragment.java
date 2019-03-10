@@ -53,7 +53,7 @@ public class CardListFragment extends Fragment implements OnItemClickListener {
         super.onActivityCreated(savedInstanceState);
 
         plantViewModel = ViewModelProviders.of(getActivity()).get(PlantViewModel.class);
-        plantViewModel.getAllPlants().observe(getViewLifecycleOwner(), adapter::setPlants);
+        plantViewModel.getAllPlants().observe(getViewLifecycleOwner(), adapter::submitList);
     }
 
     @Override
@@ -62,7 +62,6 @@ public class CardListFragment extends Fragment implements OnItemClickListener {
 
         recyclerView = (RecyclerView) view;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setHasFixedSize(true);
 
         adapter = new PlantAdapter();
         adapter.setOnItemClickListener(this);
