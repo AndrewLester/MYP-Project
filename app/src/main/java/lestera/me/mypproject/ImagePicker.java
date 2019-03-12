@@ -1,6 +1,7 @@
 package lestera.me.mypproject;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
@@ -10,10 +11,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.util.Config;
 import android.util.Log;
 
 import java.io.File;
@@ -21,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.core.content.FileProvider;
 import androidx.core.util.Pair;
@@ -34,8 +38,10 @@ public class ImagePicker {
 
     private static final int DEFAULT_MIN_WIDTH_QUALITY = 400;        // min pixels
     private static final String TAG = "ImagePicker";
-    private static final String TEMP_IMAGE_NAME = "tempImage";
-    private static final String IMAGE_DIRECTORY = "pictures";
+    private static final String TEMP_IMAGE_NAME = "Image";
+    private static final String IMAGE_DIRECTORY = "Watering Can/media/Watering Can";
+    private static final String IMAGE_DIRECTORY_CACHE = "pictures";
+    private static File lastImageFile = null;
 
     public static int minWidthQuality = DEFAULT_MIN_WIDTH_QUALITY;
 
@@ -49,7 +55,7 @@ public class ImagePicker {
         Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         takePhotoIntent.putExtra("return-data", true);
         takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID, getTempFile(context)));
+                FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID, getTempFileCamera(context)));
         intentList = addIntentsToList(context, intentList, pickIntent);
         intentList = addIntentsToList(context, intentList, takePhotoIntent);
 
@@ -77,14 +83,27 @@ public class ImagePicker {
     public static Pair<Uri, Bitmap> getImageFromResult(Context context, int resultCode,
                                                  Intent imageReturnedIntent) {
         Log.d(TAG, "getImageFromResult, resultCode: " + resultCode);
-        File imageFile = getTempFile(context);
         Uri selectedImage = null;
         if (resultCode == Activity.RESULT_OK) {
             boolean isCamera = (imageReturnedIntent == null ||
                     imageReturnedIntent.getData() == null  ||
-                    imageReturnedIntent.getData().toString().contains(imageFile.toString()));
+                    imageReturnedIntent.getData().toString().contains("Watering Can/media/Watering Can"));
             if (isCamera) {     /** CAMERA **/
-                selectedImage = Uri.fromFile(imageFile);
+                if (imageReturnedIntent == null || imageReturnedIntent.getData() == null) {
+                    selectedImage = Uri.fromFile(lastImageFile);
+                    Log.e("PATH", "LAST CAMERA: " + Uri.fromFile(lastImageFile).toString());
+                    if (imageReturnedIntent != null)
+                        Log.e("INTENT", "DATA: " + imageReturnedIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT));
+
+                    addImageToGallery(lastImageFile.getAbsolutePath(), context);
+
+                    MediaScannerConnection.scanFile(context,
+                            new String[] { lastImageFile.getAbsolutePath() }, null,
+                            (path, uri) -> Log.e("IMAGE_SCAN", "scanned : " + path));
+                } else {
+                    selectedImage = Uri.fromFile(imageReturnedIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT));
+                    Log.e("PATH", "FROM INTENT: " + selectedImage.toString());
+                }
             } else {            /** ALBUM **/
                 selectedImage = imageReturnedIntent.getData();
             }
@@ -94,9 +113,8 @@ public class ImagePicker {
         return Pair.create(selectedImage, null);
     }
 
-
     private static File getTempFile(Context context) {
-        File newdir = new File(context.getCacheDir(), IMAGE_DIRECTORY);
+        File newdir = new File(context.getCacheDir(), IMAGE_DIRECTORY_CACHE);
         if (!newdir.exists()) {
             newdir.mkdir();
         }
@@ -109,6 +127,35 @@ public class ImagePicker {
         }
 
         return newFile;
+    }
+
+    private static File getTempFileCamera(Context context) {
+        File newdir = new File(Environment.getExternalStorageDirectory(), IMAGE_DIRECTORY);
+        if (!newdir.isDirectory()) {
+            newdir.mkdir();
+        }
+
+        File newFile = new File(newdir, TEMP_IMAGE_NAME + (newdir.list() == null ? "0" : newdir.list().length) + ".jpg");
+        try {
+            newFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        lastImageFile = newFile;
+        return newFile;
+    }
+
+    public static void addImageToGallery(final String filePath, final Context context) {
+
+        ContentValues values = new ContentValues();
+
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Taken from Camera Intent");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.MediaColumns.DATA, filePath);
+
+        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
     }
 
     private static Bitmap decodeBitmap(Context context, Uri theUri, int sampleSize) {

@@ -203,6 +203,8 @@ public class PlantFragment extends Fragment {
             getActivity().onBackPressed();
         }
 
+        saveButton.setVisibility(View.GONE);
+
         onFragmentSave(nameText, descriptionText, uriString);
     }
 
