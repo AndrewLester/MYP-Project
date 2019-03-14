@@ -21,10 +21,14 @@ public class Plant {
     private Uri imageUri;
     private String name;
     private String description;
+    private short waterLimit;
+    private byte wateringTime;
 
-    public Plant(String name, String description) {
+    public Plant(String name, String description, short waterLimit, byte wateringTime) {
         this.name = name;
         this.description = description;
+        this.waterLimit = waterLimit;
+        this.wateringTime = wateringTime;
     }
 
     public void setId(int id) {
@@ -58,6 +62,22 @@ public class Plant {
 
     public String getDescription() {
         return description;
+    }
+
+    public short getWaterLimit() {
+        return waterLimit;
+    }
+
+    public void setWaterLimit(short plantWaterLimit) {
+        this.waterLimit = plantWaterLimit;
+    }
+
+    public byte getWateringTime() {
+        return wateringTime;
+    }
+
+    public void setWateringTime(byte wateringTime) {
+        this.wateringTime = wateringTime;
     }
 
     public String toString() {

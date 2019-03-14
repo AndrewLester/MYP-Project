@@ -58,7 +58,6 @@
                 android:src="@drawable/ic_edit_black_24dp" />
         </LinearLayout>
 
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -70,9 +69,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
-                android:text="Description"
-                android:imeOptions="actionDone"
                 android:imeActionLabel="Done"
+                android:imeOptions="actionDone"
+                android:text="Description"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1"
                 tools:text="Lots of text more than the length of the screen please go @string/off_button_text" />
 
@@ -84,6 +83,210 @@
                 android:foreground="?android:attr/selectableItemBackground"
                 android:src="@drawable/ic_edit_black_24dp" />
         </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dip"
+            android:layout_marginTop="15dp"
+            android:background="@color/colorDivider" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:gravity="start"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/water_data_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Current Water Data: "
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="15sp"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+
+            <TextView
+                android:id="@+id/water_data_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:textSize="15sp"
+                android:text="0"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="@color/colorAccent"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="start"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/next_water_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Next Watering In (Experimental): "
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="15sp"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+
+            <TextView
+                android:id="@+id/next_water_time_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="Unknown"
+                android:textSize="15sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="@color/colorAccent"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="start|center_vertical"
+            android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/water_plant_limit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/plant_dryness_limit"
+                    android:textSize="15sp"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:layout_editor_absoluteY="208dp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="start">
+
+                    <EditText
+                        android:id="@+id/water_plant_limit_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="750"
+                        android:textColor="@color/colorAccent"
+                        tools:layout_editor_absoluteX="8dp"
+                        tools:layout_editor_absoluteY="208dp" />
+                    <ImageView
+                        android:id="@+id/water_plant_limit_button"
+                        android:layout_width="23dp"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:src="@drawable/ic_edit_black_24dp" />
+                </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="start|center_vertical"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/water_plant_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Plant Watering Time (Seconds):"
+                android:textSize="15sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="start">
+
+                <EditText
+                    android:id="@+id/water_plant_time_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="7"
+                    android:textColor="@color/colorAccent"
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:layout_editor_absoluteY="208dp" />
+                <ImageView
+                    android:id="@+id/water_plant_time_button"
+                    android:layout_width="23dp"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:src="@drawable/ic_edit_black_24dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="start|center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/water_button_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Water Plant: "
+                android:textSize="15sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+
+            <Button
+                android:id="@+id/water_button_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="WATER"
+                android:textColor="@color/colorAccent"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:gravity="start"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/plant_watering_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Currently Watering: "
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textSize="15sp"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+
+            <TextView
+                android:id="@+id/plant_watering_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:textSize="15sp"
+                android:text="False"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:textColor="@color/colorAccent"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="208dp" />
+        </LinearLayout>
+
     </LinearLayout>
 
     <Button

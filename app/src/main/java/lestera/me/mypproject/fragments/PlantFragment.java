@@ -19,6 +19,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -34,15 +35,23 @@ import androidx.lifecycle.ViewModelProviders;
 import lestera.me.mypproject.ImagePicker;
 import lestera.me.mypproject.R;
 import lestera.me.mypproject.model.Plant;
+import lestera.me.mypproject.packets.BluetoothPacket;
+import lestera.me.mypproject.packets.OutgoingWaterLimitPacket;
+import lestera.me.mypproject.packets.OutgoingWaterPacket;
+import lestera.me.mypproject.packets.OutgoingWateringTimePacket;
 import lestera.me.mypproject.viewmodel.PlantViewModel;
 
 public class PlantFragment extends Fragment {
 
     public static final int NO_PLANT = -1;
-    public static final String PLANT_SAVE_NAME = "plant_save_name";
-    public static final String PLANT_SAVE_DESCRIPTION = "plant_save_description";
-    public static final String PLANT_SAVE_URI = "plant_save_uri";
-    public static final String PLANT_SAVE_ID = "plant_save_id";
+    private static final String PLANT_SAVE_NAME = "plant_save_name";
+    private static final String PLANT_SAVE_DESCRIPTION = "plant_save_description";
+    private static final String PLANT_SAVE_URI = "plant_save_uri";
+    private static final String PLANT_SAVE_ID = "plant_save_id";
+    private static final String PLANT_SAVE_LIMIT = "plant_save_limit";
+    private static final String PLANT_SAVE_TIME = "plant_watering_time";
+    private static final String PLANT_SAVE_WATERING = "plant_save_watering";
+    private static final String PLANT_SAVE_DATA = "plant_save_data";
     private static final int IMAGE_REQUEST_CODE = 1;
     private static final int PERMISSION_REQUEST_CODE = 0;
 
@@ -54,6 +63,11 @@ public class PlantFragment extends Fragment {
         if (id != NO_PLANT) {
             arguments.putString(PLANT_SAVE_NAME, plant.getName());
             arguments.putString(PLANT_SAVE_DESCRIPTION, plant.getDescription());
+            arguments.putShort(PLANT_SAVE_LIMIT, plant.getWaterLimit());
+            arguments.putByte(PLANT_SAVE_TIME, plant.getWateringTime());
+            arguments.putString(PLANT_SAVE_URI, plant.getImageUri() == null ? "" : plant.getImageUri().toString());
+            arguments.putBoolean(PLANT_SAVE_WATERING, false);
+            arguments.putShort(PLANT_SAVE_DATA, (short) 0);
             if (plant.getImageUri() != null)
                 arguments.putString(PLANT_SAVE_URI, plant.getImageUri().toString());
         }
@@ -69,9 +83,25 @@ public class PlantFragment extends Fragment {
     private ImageView nameEditButton;
     private EditText description;
     private ImageView descriptionEditButton;
+    private EditText plantWaterLimit;
+    private ImageView plantWaterLimitButton;
+    private EditText plantWateringTime;
+    private ImageView plantWateringTimeButton;
+    private TextView plantMoistureData;
+    private TextView plantNextWateringTime;
+    private TextView currentlyWatering;
     private Uri imageUri;
     private Button saveButton;
     private PlantViewModel plantViewModel;
+    private PlantFragmentSendListener listener;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof PlantFragment.PlantFragmentSendListener) {
+            listener = (PlantFragment.PlantFragmentSendListener) context;
+        }
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -89,12 +119,22 @@ public class PlantFragment extends Fragment {
         nameEditButton = view.findViewById(R.id.plant_name_edit_button);
         description = view.findViewById(R.id.plant_fragment_description);
         descriptionEditButton = view.findViewById(R.id.plant_description_edit_button);
+        plantWaterLimit = view.findViewById(R.id.water_plant_limit_input);
+        plantWaterLimitButton = view.findViewById(R.id.water_plant_limit_button);
+        plantMoistureData = view.findViewById(R.id.water_data_data);
+        plantNextWateringTime = view.findViewById(R.id.next_water_time_data);
+        currentlyWatering = view.findViewById(R.id.plant_watering_data);
+        plantWateringTime = view.findViewById(R.id.water_plant_time_input);
+        plantWateringTimeButton = view.findViewById(R.id.water_plant_time_button);
         saveButton = view.findViewById(R.id.plant_save_button);
 
         if (arguments != null && arguments.getInt(PLANT_SAVE_ID, NO_PLANT) != NO_PLANT) {
             name.setText(arguments.getString(PLANT_SAVE_NAME));
             description.setText(arguments.getString(PLANT_SAVE_DESCRIPTION));
+            plantWaterLimit.setText(String.valueOf(arguments.getShort(PLANT_SAVE_LIMIT)));
+            plantWateringTime.setText(String.valueOf(arguments.getByte(PLANT_SAVE_TIME)));
             if (arguments.containsKey(PLANT_SAVE_URI) && !arguments.getString(PLANT_SAVE_URI).equals("")) {
+                imageUri = Uri.parse(arguments.getString(PLANT_SAVE_URI));
                 Picasso.with(getContext())
                         .load(Uri.parse(arguments.getString(PLANT_SAVE_URI)))
                         .fit()
@@ -105,6 +145,19 @@ public class PlantFragment extends Fragment {
         }
 
         saveButton.setOnClickListener(v -> savePlant());
+        view.findViewById(R.id.water_button_button).setOnClickListener(v -> {
+            short waterLimit = 0;
+            byte waterTime = 0;
+            try {
+                 waterLimit = Short.parseShort(plantWaterLimit.getText().toString());
+                 waterTime = Byte.parseByte(plantWateringTime.getText().toString());
+            } catch (NumberFormatException e) {
+                return;
+            }
+            listener.onDataSaved(new OutgoingWaterLimitPacket(waterLimit));
+            listener.onDataSaved(new OutgoingWateringTimePacket(waterTime));
+            listener.onDataSaved(new OutgoingWaterPacket());
+        });
 
         if (plantId == NO_PLANT) {
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Add Plant");
@@ -122,6 +175,12 @@ public class PlantFragment extends Fragment {
             plantId = savedInstanceState.getInt(PLANT_SAVE_ID);
             name.setText(savedInstanceState.getString(PLANT_SAVE_NAME));
             description.setText(savedInstanceState.getString(PLANT_SAVE_DESCRIPTION));
+            plantWaterLimit.setText(String.valueOf(savedInstanceState.getShort(PLANT_SAVE_LIMIT)));
+            plantWateringTime.setText(String.valueOf(savedInstanceState.getByte(PLANT_SAVE_TIME)));
+            String text = String.valueOf(savedInstanceState.getBoolean(PLANT_SAVE_WATERING)).substring(0, 1).toUpperCase()
+                    + String.valueOf(savedInstanceState.getBoolean(PLANT_SAVE_WATERING)).substring(1);
+            currentlyWatering.setText(text);
+            plantMoistureData.setText(String.valueOf(savedInstanceState.getShort(PLANT_SAVE_DATA)));
             if (savedInstanceState.getString(PLANT_SAVE_URI).equals("")) {
                 imageUri = null;
             } else {
@@ -137,6 +196,8 @@ public class PlantFragment extends Fragment {
 
         makeEditableTextField(name, nameEditButton);
         makeEditableTextField(description, descriptionEditButton);
+        makeEditableTextField(plantWaterLimit, plantWaterLimitButton);
+        makeEditableTextField(plantWateringTime, plantWateringTimeButton);
     }
 
     @Override
@@ -146,7 +207,11 @@ public class PlantFragment extends Fragment {
         outState.putInt(PLANT_SAVE_ID, plantId);
         outState.putString(PLANT_SAVE_NAME, name.getText().toString());
         outState.putString(PLANT_SAVE_DESCRIPTION, description.getText().toString());
+        outState.putShort(PLANT_SAVE_LIMIT, Short.parseShort(plantWaterLimit.getText().toString()));
+        outState.putByte(PLANT_SAVE_TIME, Byte.parseByte(plantWateringTime.getText().toString()));
         outState.putString(PLANT_SAVE_URI, imageUri == null ? "" : imageUri.toString());
+        outState.putBoolean(PLANT_SAVE_WATERING, Boolean.parseBoolean(currentlyWatering.getText().toString()));
+        outState.putShort(PLANT_SAVE_DATA, Short.parseShort(plantMoistureData.getText().toString()));
     }
 
     @Override
@@ -187,6 +252,8 @@ public class PlantFragment extends Fragment {
     private void savePlant() {
         String nameText = name.getText().toString();
         String descriptionText = description.getText().toString();
+        short waterLimit = Short.parseShort(plantWaterLimit.getText().toString());
+        byte waterTime = Byte.parseByte(plantWateringTime.getText().toString());
         String uriString = null;
         if (imageUri != null) {
             uriString = imageUri.toString();
@@ -205,7 +272,8 @@ public class PlantFragment extends Fragment {
 
         saveButton.setVisibility(View.GONE);
 
-        onFragmentSave(nameText, descriptionText, uriString);
+        Log.e("LIMIT", String.valueOf(waterLimit));
+        onFragmentSave(nameText, descriptionText, waterLimit, waterTime, uriString);
     }
 
     private boolean checkPermission(String permission) {
@@ -260,20 +328,46 @@ public class PlantFragment extends Fragment {
         });
     }
 
-    public void onFragmentSave(String title, String description, String stringUri) {
+    public void onFragmentSave(String title, String description, short waterLimit, byte wateringTime, String stringUri) {
         if (plantId == NO_PLANT) {
-            Plant plant = new Plant(title, description);
+            Plant plant = new Plant(title, description, waterLimit, wateringTime);
             if (stringUri != null && !stringUri.equals("")) {
                 plant.setImageUri(Uri.parse(stringUri));
             }
             plantViewModel.insert(plant);
         } else {
-            Plant plant = new Plant(title, description);
+            Plant plant = new Plant(title, description, waterLimit, wateringTime);
             if (stringUri != null && !stringUri.equals("")) {
                 plant.setImageUri(Uri.parse(stringUri));
             }
             plant.setId(plantId);
             plantViewModel.update(plant);
         }
+
+        listener.onDataSaved(new OutgoingWaterLimitPacket(waterLimit));
+        listener.onDataSaved(new OutgoingWateringTimePacket(wateringTime));
+    }
+
+    public void updateMoistureData(short data) {
+        if (getActivity() == null) {
+            return;
+        }
+        getActivity().runOnUiThread(() -> {
+            plantMoistureData.setText(String.valueOf(data));
+        });
+    }
+
+    public void updateWatering(boolean watering) {
+        if (getActivity() == null) {
+            return;
+        }
+        getActivity().runOnUiThread(() -> {
+            String text = String.valueOf(watering).substring(0, 1).toUpperCase() + String.valueOf(watering).substring(1);
+            currentlyWatering.setText(text);
+        });
+    }
+
+    public interface PlantFragmentSendListener {
+        void onDataSaved(BluetoothPacket data);
     }
 }

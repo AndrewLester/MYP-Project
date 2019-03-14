@@ -247,7 +247,7 @@ public class BluetoothMessengerService extends Service {
                         }
                     }
 
-                } catch (IOException | ArrayIndexOutOfBoundsException e) {
+                } catch (IOException | NegativeArraySizeException | IndexOutOfBoundsException e) {
                     Log.d(TAG, "Input stream was disconnected", e);
                     break;
                 }

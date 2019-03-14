@@ -1,5 +1,7 @@
 package lestera.me.mypproject.packets;
 
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -8,7 +10,7 @@ public final class IncomingPlantDataPacket extends BluetoothPacket {
     private byte plantId;
 
     // Left to Right: Unused | Unused | Unused | Unused | Unused | Unused | Unused | Watering
-    private byte plantStates = 0b00000000;
+    private byte plantStates;
     private byte[] buffer;
     private int nextWatering;
 
@@ -16,9 +18,13 @@ public final class IncomingPlantDataPacket extends BluetoothPacket {
         super((byte) 0x01);
 
         this.buffer = buff.array();
-        this.plantId = buff.get(2);
-        this.plantStates = buff.get(3);
-        this.nextWatering = buff.getInt(4);
+        setPlantData();
+    }
+
+    private void setPlantData() {
+        this.plantId = buffer[2];
+        this.plantStates = buffer[3];
+        this.nextWatering = buffer[4];
     }
 
     public int getPlantId() {
@@ -26,12 +32,12 @@ public final class IncomingPlantDataPacket extends BluetoothPacket {
     }
 
     public boolean isWatering() {
-        return (plantStates & (0x1 << 0)) == 1;
+        return (plantStates & (0x1)) == 1;
     }
 
     @Override
     public byte getDataLength() {
-        return 0x05;
+        return 0x03;
     }
 
     @Override

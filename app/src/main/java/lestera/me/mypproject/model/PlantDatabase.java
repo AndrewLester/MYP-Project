@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = Plant.class, version = 1)
+@Database(entities = Plant.class, version = 2)
 @TypeConverters({Converters.class})
 public abstract class PlantDatabase extends RoomDatabase {
 
@@ -48,9 +48,7 @@ public abstract class PlantDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            plantDao.insert(new Plant("FakePlant", "OOF"));
-            plantDao.insert(new Plant("New Fake", "gang"));
-            plantDao.insert(new Plant("Easier", "BIG OFF LARGE LOTS OF CONTENT SEE IF THIS FITS ON THE PAGE IDK"));
+            plantDao.insert(new Plant("Plant", "None", (short) 500, (byte) 1));
             return null;
         }
     }

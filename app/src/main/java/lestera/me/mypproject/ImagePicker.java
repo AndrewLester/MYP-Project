@@ -135,7 +135,7 @@ public class ImagePicker {
             newdir.mkdir();
         }
 
-        File newFile = new File(newdir, TEMP_IMAGE_NAME + (newdir.list() == null ? "0" : newdir.list().length) + ".jpg");
+        File newFile = new File(newdir, TEMP_IMAGE_NAME + System.currentTimeMillis() + ".jpg");
         try {
             newFile.createNewFile();
         } catch (IOException e) {
@@ -150,6 +150,7 @@ public class ImagePicker {
 
         ContentValues values = new ContentValues();
 
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, "Plant");
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
         values.put(MediaStore.Images.Media.DESCRIPTION, "Taken from Camera Intent");
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");

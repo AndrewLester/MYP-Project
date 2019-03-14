@@ -43,14 +43,17 @@ import lestera.me.mypproject.fragments.NoConnectionFragment;
 import lestera.me.mypproject.fragments.PlantFragment;
 import lestera.me.mypproject.model.Plant;
 import lestera.me.mypproject.packets.BluetoothPacket;
+import lestera.me.mypproject.packets.IncomingHumidityDataPacket;
 import lestera.me.mypproject.packets.IncomingPlantDataPacket;
 import lestera.me.mypproject.packets.IncomingPlantNumberPacket;
+import lestera.me.mypproject.packets.OutgoingWaterLimitPacket;
 import lestera.me.mypproject.viewmodel.BluetoothDeviceViewModel;
 import lestera.me.mypproject.viewmodel.PlantViewModel;
 
 public class PlantsActivity extends AppCompatActivity implements
         BluetoothMessengerService.Reader,
         CardListFragment.PlantFragmentUpdateListener,
+        PlantFragment.PlantFragmentSendListener,
         NoConnectionFragment.NoConnectionClickListener {
 
     private static final String FRAGMENT_TAG = "card_list_fragment";
@@ -70,6 +73,7 @@ public class PlantsActivity extends AppCompatActivity implements
     private FragmentManager fragmentManager;
     private BluetoothMessengerService service;
     private CardListFragment cardListFragment;
+    private PlantFragment plantFragment;
     private NoConnectionFragment noConnectionFragment;
     private ActionBarDrawerToggle toggle;
     private BluetoothDeviceViewModel deviceViewModel;
@@ -281,8 +285,9 @@ public class PlantsActivity extends AppCompatActivity implements
     }
 
     public void openNewPlantDialogue(int id, Plant plant) {
+        plantFragment = PlantFragment.newInstance(id, plant);
         fragmentManager.beginTransaction()
-                .replace(R.id.plants_frame_layout, PlantFragment.newInstance(id, plant))
+                .replace(R.id.plants_frame_layout, plantFragment)
                 .addToBackStack(PLANT_FRAGMENT_TAG)
                 .commit();
 
@@ -291,13 +296,16 @@ public class PlantsActivity extends AppCompatActivity implements
 
     @Override
     public void bluetoothRead(BluetoothPacket packet) {
-        if (packet instanceof IncomingPlantNumberPacket) {
-            IncomingPlantNumberPacket plantNumberPacket = (IncomingPlantNumberPacket) packet;
-
-
-            //fragment.updatePlantNumber(plantNumberPacket.getPlantNumber());
+        if (packet instanceof IncomingHumidityDataPacket) {
+            IncomingHumidityDataPacket plantDataPacket = (IncomingHumidityDataPacket) packet;
+            if (plantFragment != null) {
+                plantFragment.updateMoistureData(plantDataPacket.getSensorData());
+            }
         } else if (packet instanceof IncomingPlantDataPacket) {
             IncomingPlantDataPacket plantDataPacket = (IncomingPlantDataPacket) packet;
+            if (plantFragment != null) {
+                plantFragment.updateWatering(plantDataPacket.isWatering());
+            }
         }
     }
 
@@ -322,6 +330,10 @@ public class PlantsActivity extends AppCompatActivity implements
         );
         params.gravity = center ? Gravity.CENTER : Gravity.NO_GRAVITY;
         view.setLayoutParams(params);
+    }
+
+    public void onDataSaved(BluetoothPacket packet) {
+        service.write(packet);
     }
 
     @Override

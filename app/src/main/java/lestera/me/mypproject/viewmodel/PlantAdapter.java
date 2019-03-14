@@ -47,6 +47,8 @@ public class PlantAdapter extends ListAdapter<Plant, PlantAdapter.PlantHolder> {
             return oldItem.getId() == newItem.getId() &&
                     oldItem.getName().equals(newItem.getName()) &&
                     oldItem.getDescription().equals(newItem.getDescription()) &&
+                    oldItem.getWaterLimit() == newItem.getWaterLimit() &&
+                    oldItem.getWateringTime() == newItem.getWateringTime() &&
                     imagesSame;
         }
     };
